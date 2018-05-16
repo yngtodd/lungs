@@ -13,5 +13,5 @@ setup(
     description="Classification and Localization of Thoracic Diseases.",
     license="MIT",
     keywords="Imaging, ML, optimization",
-    url="https://code-int.ornl.gov/ygx/lungXnet",
+    url="https://github.com/yngtodd/lungs",
 )
