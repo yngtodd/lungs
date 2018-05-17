@@ -7,6 +7,8 @@ from torch.utils.data import Dataset
 
 class ChestXrayDataSet(Dataset):
         """
+        NIH Chest X-Ray 14 dataset.
+
         Parameters:
         ----------
 
