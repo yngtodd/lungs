@@ -11,7 +11,6 @@ class ChestXrayDataSet(Dataset):
 
         Parameters:
         ----------
-
         data_dir : str
             Path to image directory.
             
