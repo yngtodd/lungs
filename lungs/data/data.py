@@ -6,20 +6,20 @@ from torch.utils.data import Dataset
 
 
 class ChestXrayDataSet(Dataset):
-        """
-        NIH Chest X-Ray 14 dataset.
+    """
+    NIH Chest X-Ray 14 dataset.
 
-        Parameters:
-        ----------
-        data_dir : str
-            Path to image directory.
-            
-        image_list_file: 
-            Path to the file containing images with corresponding labels.
-            
-        transform : Pytorch transform
-            Optional transform to be applied on a sample.
-        """
+    Parameters:
+    ----------
+    data_dir : str
+        Path to image directory.
+
+    image_list_file:
+        Path to the file containing images with corresponding labels.
+
+    transform : Pytorch transform
+        Optional transform to be applied on a sample.
+    """
     def __init__(self, data_dir, image_list_file, transform=None):
         image_names = []
         labels = []
@@ -46,8 +46,8 @@ class ChestXrayDataSet(Dataset):
         img = cv2.imread(image)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         label = self.labels[index]
-        
+
         if self.transform is not None:
             img = self.transform(img)
-        
+
         return img, torch.FloatTensor(label)

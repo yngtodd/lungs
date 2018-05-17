@@ -4,45 +4,211 @@ from torch.utils.data import DataLoader
 from lungs.data.data import ChestXrayDataSet
 
 
-_image_list_files = {'train':'./chestX-ray14/labels/train_list.txt',
-                    'test':'./chestX-ray14/labels/test_list.txt',
-                    'val':'./chestX-ray14/labels/val_list.txt'}
+class XRayLoaders:
+    """
+    Data loaders and transforms for Xray14 Data
 
-def get_loaders(args):
+    Parameters:
+    ----------
+    data_dir : str
+        Path to the data base directory
+
+    batch_size : int
+        Batch size for data loaders.
+
+    DataSet : Pytorch DataSet class, default: ChestXrayDataSet
+        Handles reading of the data.
+
+    pin_memory : bool, default: True
+
+    num_workers : int, default: 4
+        Number of threads to read in the data.
+
+    train_transform : func, Optional
+        Custom Pytorch transforms to be passed to the train set.
+
+    val_transform : func, Optional
+        Custom Pytorch transforms to be passed to the validation set.
+
+    test_transform : func, Optional
+        Custom Pytorch transforms to be passed to the test set.
+    """
+
     normalize = transforms.Normalize([0.485, 0.456, 0.406],
                                      [0.229, 0.224, 0.225])
-    datatransforms = {
-        'train': transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            normalize
-        ]),
-        'test': transforms.Compose([
-            transforms.Resize(256),
-            transforms.TenCrop(224),
-            transforms.Lambda
-            (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-            transforms.Lambda
-            (lambda crops: torch.stack([normalize(crop) for crop in crops]))
-        ]),
-        'val': transforms.Compose([
-            transforms.Resize(256),
-            transforms.TenCrop(224),
-            transforms.Lambda
-            (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-            transforms.Lambda
-            (lambda crops: torch.stack([normalize(crop) for crop in crops]))
-        ])
-    }
 
-    image_datasets = {x:ChestXrayDataSet(data_dir=args.data,
-                                        image_list_file=_image_list_files[x],
-                                        transform=datatransforms[x])
-                     for x in ['train','test','val']}
+    train_default = transforms.Compose([
+        transforms.Resize(256),
+        transforms.TenCrop(224),
+        transforms.Lambda
+        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+        transforms.Lambda
+        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+    ])
 
-    dataloaders = {x:DataLoader(dataset=image_datasets[x], batch_size=args.batch,
-                              shuffle=False if x =='test' else True, num_workers=args.workers, pin_memory=True)
-                   for x in ['train','test','val']}
+    val_default = transforms.Compose([
+        transforms.Resize(256),
+        transforms.TenCrop(224),
+        transforms.Lambda
+        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+        transforms.Lambda
+        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+    ])
 
-    return dataloaders
+    test_default = transforms.Compose([
+        transforms.Resize(256),
+        transforms.TenCrop(224),
+        transforms.Lambda
+        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+        transforms.Lambda
+        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+    ])
+
+    def __init__(self, data_dir, batch_size,
+                 DataSet=ChestXrayDataSet, pin_memory=True, num_workers=4,
+                 train_transform=None, val_transform=None, test_transform=None):
+        self.data_dir = data_dir
+        self.DataSet = DataSet
+        self.pin_memory = pin_memory
+        self.num_workers = num_workers
+        self.train_transform = train_transform
+        self.val_transform = val_transform
+        self.test_transform = test_transform
+
+    def train_loader(self, image_list_file, shuffle=True, transform=True):
+        """
+        Create trainloader with options for data transforms
+
+        Parameters:
+        ----------
+        image_list_file : str
+            Path to the train image file list. Contains image names and labels.
+
+        shuffle : bool, default: True
+            Whether to shuffle the data.
+
+        Transform : bool, default: True
+            Whether to transform the data. A few options here:
+            - If False, no data transformations are made
+            - If True and a train_transformer is given, train_transformer is used.
+            - the class is not given a train_transformer, a
+              default transform is used.
+        """
+        if not transform:
+            # Instantiate the dataset with
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file
+             )
+        elif train_transform is not None:
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file,
+              transform=self.train_transform
+            )
+        else:
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file,
+              transform=train_default
+            )
+
+        # Create data loader
+        loader = DataLoader(
+          dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
+          num_workers=self.num_workers, pin_memory=self.pin_memory
+        )
+
+        return loader
+
+    def val_loader(self, image_list_file, shuffle=True, transform=True):
+        """
+        Create valloader with options for data transforms
+
+        Parameters:
+        ----------
+        image_list_file : str
+            Path to the train image file list. Contains image names and labels.
+
+        shuffle : bool, default: True
+            Whether to shuffle the data.
+
+        Transform : bool, default: True
+            Whether to transform the data. A few options here:
+            - If False, no data transformations are made
+            - If True and a val_transformer is given, train_transformer is used.
+            - the class is not given a val_transformer, a
+              default transform is used.
+        """
+        if not transform:
+            # Instantiate the dataset with
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file
+             )
+        elif train_transform is not None:
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file,
+              transform=self.val_transform
+            )
+        else:
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file,
+              transform=val_default
+            )
+
+        # Create data loader
+        loader = DataLoader(
+          dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
+          num_workers=self.num_workers, pin_memory=self.pin_memory
+        )
+
+        return loader
+
+    def test_loader(self, image_list_file, shuffle=True, transform=True):
+        """
+        Create testloader with options for data transforms
+
+        Parameters:
+        ----------
+        image_list_file : str
+            Path to the train image file list. Contains image names and labels.
+
+        shuffle : bool, default: True
+            Whether to shuffle the data.
+
+        Transform : bool, default: True
+            Whether to transform the data. A few options here:
+            - If False, no data transformations are made
+            - If True and a test_transformer is given, train_transformer is used.
+            - the class is not given a test_transformer, a
+              default transform is used.
+        """
+        if not transform:
+            # Instantiate the dataset with
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file
+             )
+        elif train_transform is not None:
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file,
+              transform=self.test_transform
+            )
+        else:
+            dataset = self.DataSet(
+              data_dir=self.data_dir,
+              image_list_file=image_list_file,
+              transform=test_default
+            )
+
+        # Create data loader
+        loader = DataLoader(
+          dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
+          num_workers=self.num_workers, pin_memory=self.pin_memory
+        )
+
+        return loader
