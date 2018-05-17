@@ -43,7 +43,7 @@ class ChestXrayDataSet(Dataset):
     def __getitem__(self, index):
         """Get next image and label"""
         img = self.image_names[index]
-        img = cv2.imread(image)
+        img = cv2.imread(img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         label = self.labels[index]
 

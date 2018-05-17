@@ -68,6 +68,7 @@ class XRayLoaders:
                  DataSet=ChestXrayDataSet, pin_memory=True, num_workers=4,
                  train_transform=None, val_transform=None, test_transform=None):
         self.data_dir = data_dir
+        self.batch_size = batch_size
         self.DataSet = DataSet
         self.pin_memory = pin_memory
         self.num_workers = num_workers
@@ -100,7 +101,7 @@ class XRayLoaders:
               data_dir=self.data_dir,
               image_list_file=image_list_file
              )
-        elif train_transform is not None:
+        elif self.train_transform is not None:
             dataset = self.DataSet(
               data_dir=self.data_dir,
               image_list_file=image_list_file,
@@ -110,7 +111,7 @@ class XRayLoaders:
             dataset = self.DataSet(
               data_dir=self.data_dir,
               image_list_file=image_list_file,
-              transform=train_default
+              transform=XRayLoaders.train_default
             )
 
         # Create data loader
@@ -146,7 +147,7 @@ class XRayLoaders:
               data_dir=self.data_dir,
               image_list_file=image_list_file
              )
-        elif train_transform is not None:
+        elif self.val_transform is not None:
             dataset = self.DataSet(
               data_dir=self.data_dir,
               image_list_file=image_list_file,
@@ -156,7 +157,7 @@ class XRayLoaders:
             dataset = self.DataSet(
               data_dir=self.data_dir,
               image_list_file=image_list_file,
-              transform=val_default
+              transform=XRayLoaders.val_default
             )
 
         # Create data loader
@@ -192,7 +193,7 @@ class XRayLoaders:
               data_dir=self.data_dir,
               image_list_file=image_list_file
              )
-        elif train_transform is not None:
+        elif self.test_transform is not None:
             dataset = self.DataSet(
               data_dir=self.data_dir,
               image_list_file=image_list_file,
@@ -202,7 +203,7 @@ class XRayLoaders:
             dataset = self.DataSet(
               data_dir=self.data_dir,
               image_list_file=image_list_file,
-              transform=test_default
+              transform=XRayLoaders.test_default
             )
 
         # Create data loader
