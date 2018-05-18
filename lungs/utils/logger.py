@@ -1,9 +1,13 @@
-def print_progress(epoch, num_epochs, timemeter, lossmeter, aucmeter=None):
+def print_progress(context, epoch, num_epochs, timemeter, lossmeter, aucmeter=None):
     """
     Prints current values and averages for AverageMeters
 
     Parameters:
     ----------
+    context : str
+        What progress we are tracking.
+        Options - {'Train', 'Validation', 'Test'}
+
     epoch : int
         Current epoch.
 
@@ -19,7 +23,7 @@ def print_progress(epoch, num_epochs, timemeter, lossmeter, aucmeter=None):
     aucmeter : lungs.metrics.AUCMeter
         Optional: AUCMeter object recording AUC, TPR, and FPR.
     """
-    message = f"Epoch: [{epoch}/{num_epochs}] "\
+    message = f"{context} Epoch: [{epoch}/{num_epochs}] "\
               f"Time: {timemeter.val} [{timemeter.avg}] "\
               f"Loss: {lossmeter.val} [{lossmeter.avg}] "
 
