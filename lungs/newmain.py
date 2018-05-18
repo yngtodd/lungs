@@ -19,11 +19,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     loss_meter = AverageMeter(name='losses')
     auc_meter = AverageMeter(name='aucs')
 
-    y_true, y_pred = torch.FloatTensor(), torch.floatTensor()
-    if args.cuda:
-        y_true.cuda()
-        y_pred.cuda() 
-
+    model.train()
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         load_time.update(time.time() - end)
@@ -48,6 +44,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
 
 def validate(epoch, val_loader, model):
     """"""
+    
 
 
 def main():
@@ -70,7 +67,7 @@ def main():
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
-    criterion = nn.BCELoss(sieze_average=True)
+    criterion = nn.BCELoss(size_average=True)
     if args.cuda:
         criterion.cuda()
 
