@@ -4,29 +4,24 @@ import argparse
 def parse_args():
     """
     Parse Arguments for the lungXnet.
-    
+
     Returns:
     -------
     * `args`: [argparse object]
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('-d','--data', metavar='DIR',default='/mnt/data/ChestXRay14/images',
+    parser.add_argument('-d','--data', metavar='DIR',default='./data/exampleX-ray14/images',
                         help='path to dataset')
-    parser.add_argument('--arch', '-a', metavar='ARCH', default='densenet121',
-                        choices=model_names,
-                        help='model architecture: ' +
-                            ' | '.join(model_names) +
-                            ' (default: densenet121)')
-    parser.add_argument('-j', '--workers', default=16, type=int, metavar='N',
+    parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
-    parser.add_argument('--epochs', default=100, type=int, metavar='N',
+    parser.add_argument('--num_epochs', default=100, type=int, metavar='N',
                         help='number of total epochs to run (default: 100)')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='S',
                         help='manual epoch number (useful on restarts)')
-    parser.add_argument('-b', '--batch', default=14, type=int,
-                        metavar='N', help='mini-batch size (default: 14)')
-    parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float,
+    parser.add_argument('-b', '--batch_size', default=2, type=int,
+                        metavar='N', help='mini-batch size (default: 2)')
+    parser.add_argument('--lr', '--learning_rate', default=1e-4, type=float,
                         metavar='LR', help='initial learning rate')
     parser.add_argument('--step-size', '--step-size', default=30, type=int,
                         metavar='SS', help='learning rate scheduler step size')
@@ -38,8 +33,8 @@ def parse_args():
                         help='type of optimizer (default=Adam)')
     parser.add_argument('--weight-decay', '--wd', default=1e-5, type=float,
                         metavar='W', help='weight decay (default: 1e-4)')
-    parser.add_argument('--print-freq', '-p', default=14, type=int,
-                        metavar='N', help='print frequency (default: 21)')
+    parser.add_argument('--log_interval', '-p', default=2, type=int,
+                        metavar='N', help='print frequency (default: 2)')
     parser.add_argument('--resume', default='checkpoint.pth.tar', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: checkpoint.pth.tar)')
     parser.add_argument('--best-model', default='model.pth.tar', type=str, metavar='PATH',
