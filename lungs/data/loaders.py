@@ -44,7 +44,7 @@ class XRayLoaders:
         transforms.Lambda
         (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
         transforms.Lambda
-        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+        (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
     ])
 
     val_default = transforms.Compose([
@@ -53,7 +53,7 @@ class XRayLoaders:
         transforms.Lambda
         (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
         transforms.Lambda
-        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+        (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
     ])
 
     test_default = transforms.Compose([
@@ -62,7 +62,7 @@ class XRayLoaders:
         transforms.Lambda
         (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
         transforms.Lambda
-        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+        (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
     ])
 
     def __init__(self, data_dir, batch_size,
