@@ -23,6 +23,9 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         load_time.update(time.time() - end)
+
+        bs, n_crops, c, h, w = data.size()
+        data = data.view(-1, c, h, w).cuda()
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
@@ -82,8 +85,8 @@ def main():
     
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
-    train_loader = loaders.train_loader(imagetxt=args.traintxt, transform=False)
-    val_loader = loaders.val_loader(imagetxt=args.valtxt, transform=False)
+    train_loader = loaders.train_loader(imagetxt=args.traintxt)
+    val_loader = loaders.val_loader(imagetxt=args.valtxt)
     
     end = time.time()
     model = LungXnet()

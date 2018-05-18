@@ -1,5 +1,5 @@
 import os
-import cv2
+from PIL import Image
 
 import torch
 from torch.utils.data import Dataset
@@ -43,8 +43,7 @@ class ChestXrayDataSet(Dataset):
     def __getitem__(self, index):
         """Get next image and label"""
         img = self.image_names[index]
-        img = cv2.imread(img)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = Image.open(img).convert('RGB')
         label = self.labels[index]
 
         if self.transform is not None:
