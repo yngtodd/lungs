@@ -1,5 +1,5 @@
 import numpy as np
-from tnt.meter import Meter
+from torchnet.meter.meter import Meter
 
 
 class AverageMeter(object):

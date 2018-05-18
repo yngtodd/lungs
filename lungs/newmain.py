@@ -7,15 +7,16 @@ from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
 from lungs.models.lungxnet import LungXnet
 
+import time
 from lungs.utils.logger import print_progress
 from lungs.meters import AverageMeter, AUCMeter
 
 
-def train(epoch, train_loader, optimizer, criterion):
+def train(epoch, train_loader, optimizer, criterion, model):
     """"""
 
 
-def validate(epoch, test_loader):
+def validate(epoch, val_loader, model):
     """"""
 
 
@@ -36,3 +37,28 @@ def main():
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
+
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    
+    criterion = nn.BCELoss(sieze_average=True)
+    if args.cuda:
+        criterion.cuda()
+
+    epoch_time = AverageMeter(name='epoch_time')
+    end = time.time()
+
+    for epoch in range(1, args.num_epochs+1):
+        train(epoch, train_loader, optimizer, criterion, model)
+        validate(epoch, val_loader, criterion, model)
+        epoch_time.update(time.time() - end)
+        end = time.time()
+
+    print(f"\nJob's done! Total runtime: {epoch_time.sum}, Average runtime: {epoch_time.avg}")
+
+
+if __name__=="__main__":
+    main()
+
+
+
+
