@@ -5,7 +5,7 @@ from torch.autograd import Variable
 
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
-from lungs.models.lungxnet import LungXnet
+from lungs.models.lungXnet import LungXnet
 
 import time
 from lungs.utils.logger import print_progress
@@ -42,7 +42,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
             print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, auc_meter)
 
 
-def validate(epoch, val_loader, model):
+def validate(epoch, val_loader, model, args):
     """"""
     load_time = AverageMeter(name='loading_time')
     batch_time = AverageMeter(name='batch_time')
@@ -81,9 +81,9 @@ def main():
         torch.cuda.manual_seed(args.seed)
 
     # Data loading
-    loaders = XRayLoaders(data_dir=args.data_dir, batch_size=args.batch_size)
-    train_loader = loaders.train_loader(imagetxt=args.traintxt)
-    val_loader = loaders.val_loader(imagetxt=args.valtxt)
+    loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
+    train_loader = loaders.train_loader(imagetxt=args.traintxt, transform=False)
+    val_loader = loaders.val_loader(imagetxt=args.valtxt, transform=False)
 
     model = LungXnet()
     if args.cuda and torch.cuda.device_count() > 1:
@@ -100,8 +100,8 @@ def main():
     end = time.time()
 
     for epoch in range(1, args.num_epochs+1):
-        train(epoch, train_loader, optimizer, criterion, model)
-        validate(epoch, val_loader, criterion, model)
+        train(epoch, train_loader, optimizer, criterion, model, args)
+        validate(epoch, val_loader, criterion, model, args)
         epoch_time.update(time.time() - end)
         end = time.time()
 
