@@ -14,16 +14,16 @@ class ChestXrayDataSet(Dataset):
     data_dir : str
         Path to image directory.
 
-    image_list_file:
+    imagetxt:
         Path to the file containing images with corresponding labels.
 
     transform : Pytorch transform
         Optional transform to be applied on a sample.
     """
-    def __init__(self, data_dir, image_list_file, transform=None):
+    def __init__(self, data_dir, imagetxt, transform=None):
         image_names = []
         labels = []
-        with open(image_list_file, "r") as f:
+        with open(imagetxt, "r") as f:
             for line in f:
                 items = line.split()
                 image_name= items[0]

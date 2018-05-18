@@ -76,13 +76,13 @@ class XRayLoaders:
         self.val_transform = val_transform
         self.test_transform = test_transform
 
-    def train_loader(self, image_list_file, shuffle=True, transform=True):
+    def train_loader(self, imagetxt, shuffle=True, transform=True):
         """
         Create trainloader with options for data transforms
 
         Parameters:
         ----------
-        image_list_file : str
+        imagetxt : str
             Path to the train image file list. Contains image names and labels.
 
         shuffle : bool, default: True
@@ -99,18 +99,18 @@ class XRayLoaders:
             # Instantiate the dataset with
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file
+              imagetxt=imagetxt
              )
         elif self.train_transform is not None:
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file,
+              imagetxt=imagetxt,
               transform=self.train_transform
             )
         else:
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file,
+              imagetxt=imagetxt,
               transform=XRayLoaders.train_default
             )
 
@@ -122,13 +122,13 @@ class XRayLoaders:
 
         return loader
 
-    def val_loader(self, image_list_file, shuffle=True, transform=True):
+    def val_loader(self, imagetxt, shuffle=True, transform=True):
         """
         Create valloader with options for data transforms
 
         Parameters:
         ----------
-        image_list_file : str
+        imagetxt : str
             Path to the train image file list. Contains image names and labels.
 
         shuffle : bool, default: True
@@ -145,18 +145,18 @@ class XRayLoaders:
             # Instantiate the dataset with
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file
+              imagetxt=imagetxt
              )
         elif self.val_transform is not None:
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file,
+              imagetxt=imagetxt,
               transform=self.val_transform
             )
         else:
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file,
+              imagetxt=imagetxt,
               transform=XRayLoaders.val_default
             )
 
@@ -168,13 +168,13 @@ class XRayLoaders:
 
         return loader
 
-    def test_loader(self, image_list_file, shuffle=True, transform=True):
+    def test_loader(self, imagetxt, shuffle=True, transform=True):
         """
         Create testloader with options for data transforms
 
         Parameters:
         ----------
-        image_list_file : str
+        imagetxt : str
             Path to the train image file list. Contains image names and labels.
 
         shuffle : bool, default: True
@@ -191,18 +191,18 @@ class XRayLoaders:
             # Instantiate the dataset with
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file
+              imagetxt=imagetxt
              )
         elif self.test_transform is not None:
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file,
+              imagetxt=imagetxt,
               transform=self.test_transform
             )
         else:
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              image_list_file=image_list_file,
+              imagetxt=imagetxt,
               transform=XRayLoaders.test_default
             )
 
