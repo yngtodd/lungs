@@ -79,16 +79,19 @@ def main():
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
-
+    
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
     train_loader = loaders.train_loader(imagetxt=args.traintxt, transform=False)
     val_loader = loaders.val_loader(imagetxt=args.valtxt, transform=False)
-
+    
+    end = time.time()
     model = LungXnet()
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
+    model.cuda()
+    print(f'Finished loading model in {time.time() - end}')
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
@@ -98,7 +101,6 @@ def main():
 
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
-
     for epoch in range(1, args.num_epochs+1):
         train(epoch, train_loader, optimizer, criterion, model, args)
         validate(epoch, val_loader, criterion, model, args)
