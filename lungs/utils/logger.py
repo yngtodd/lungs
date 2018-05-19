@@ -1,4 +1,4 @@
-def print_progress(context, epoch, num_epochs, timemeter, lossmeter, aucmeter=None):
+def print_progress(context, epoch, num_epochs, timemeter, lossmeter, apmeter, aucmeter=None):
     """
     Prints current values and averages for AverageMeters
 
@@ -25,7 +25,8 @@ def print_progress(context, epoch, num_epochs, timemeter, lossmeter, aucmeter=No
     """
     message = f"{context} Epoch: [{epoch}/{num_epochs}] "\
               f"Time: {timemeter.val:.2f} [{timemeter.avg:.2f}] "\
-              f"Loss: {lossmeter.val:.4f} [{lossmeter.avg:.4f}] "
+              f"Loss: {lossmeter.val:.4f} [{lossmeter.avg:.4f}] "\
+              f"Avg Prec: {apmeter.val:.4f} "
 
     if aucmeter:
         auc = f"AUC: {aucmeter.area:.2f} TPR: {aucmeter.tpr:.2f} FPR: {aucmeter.fpr:.2f} "

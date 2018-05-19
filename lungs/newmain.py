@@ -9,7 +9,7 @@ from lungs.models.lungXnet import LungXnet
 
 import time
 from lungs.utils.logger import print_progress
-from lungs.meters import AverageMeter, AUCMeter
+from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
 
 def train(epoch, train_loader, optimizer, criterion, model, args):
@@ -17,7 +17,8 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     load_time = AverageMeter(name='loading_time')
     batch_time = AverageMeter(name='batch_time')
     loss_meter = AverageMeter(name='losses')
-    auc_meter = AUCMeter(name='aucs')
+    #auc_meter = AUCMeter(name='aucs')
+    mapmeter = mAPMeter()
 
     model.train()
     end = time.time()
@@ -37,13 +38,13 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
- 
         loss_meter.update(loss.item(), data.size(0))
         #auc_meter.add(output, target)
         #auc_meter.update()
+        mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, auc_meter)
+            print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
 
 
 def validate(epoch, val_loader, criterion, model, args):
@@ -52,6 +53,7 @@ def validate(epoch, val_loader, criterion, model, args):
     batch_time = AverageMeter(name='batch_time')
     loss_meter = AverageMeter(name='losses')
     #auc_meter = AverageMeter(name='aucs')
+    mapmeter = mAPMeter()
 
     model.eval()
     end = time.time()
@@ -72,9 +74,10 @@ def validate(epoch, val_loader, criterion, model, args):
         loss_meter.update(loss.item(), data.size(0))
         #auc_meter.add(output, target)
         #auc_meter.update()
+        mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter)
+            print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
 
     
 def main():

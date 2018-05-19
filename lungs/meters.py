@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 
-from torchnet.meter.meter import Meter
+from torchnet.meter import meter
+from torchnet.meter import APMeter
 
 
 class AverageMeter(object):
@@ -45,7 +46,7 @@ class AverageMeter(object):
         np.save(path + '/' + self.name + '_vals' + str(self.rank), self.vals)
 
 
-class AUCMeter(Meter):
+class AUCMeter(meter.Meter):
     """
     Lightly modified AUCMeter from pytorch.tnt
 
@@ -127,3 +128,31 @@ class AUCMeter(Meter):
         sum_h[0:n - 1] = h
         sum_h[1:n] += h
         self.area = (sum_h * tpr).sum() / 2.0
+
+
+class mAPMeter(meter.Meter):
+    """
+    The mAPMeter measures the mean average precision over all classes.
+    The mAPMeter is designed to operate on `NxK` Tensors `output` and
+    `target`, and optionally a `Nx1` Tensor weight where (1) the `output`
+    contains model output scores for `N` examples and `K` classes that ought to
+    be higher when the model is more convinced that the example should be
+    positively labeled, and smaller when the model believes the example should
+    be negatively labeled (for instance, the output of a sigmoid function); (2)
+    the `target` contains only values 0 (for negative examples) and 1
+    (for positive examples); and (3) the `weight` ( > 0) represents weight for
+    each sample.
+    """
+    def __init__(self):
+        super(mAPMeter, self).__init__()
+        self.apmeter = APMeter()
+
+    def reset(self):
+        self.apmeter.reset()
+        self.val = 0
+
+    def update(self, output, target, weight=None):
+        output = output.detach()
+        target = target.detach()
+        self.apmeter.add(output, target, weight)
+        self.val = self.apmeter.value().mean()
