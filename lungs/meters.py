@@ -1,4 +1,6 @@
+import torch
 import numpy as np
+
 from torchnet.meter.meter import Meter
 
 
@@ -60,7 +62,7 @@ class AUCMeter(Meter):
     contains only values 0 (for negative examples) and 1 (for positive examples).
     """
 
-    def __init__(self):
+    def __init__(self, name, rank=None):
         super(AUCMeter, self).__init__()
         self.name = name
         self.rank = rank

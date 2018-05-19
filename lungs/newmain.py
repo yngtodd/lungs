@@ -17,12 +17,14 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     load_time = AverageMeter(name='loading_time')
     batch_time = AverageMeter(name='batch_time')
     loss_meter = AverageMeter(name='losses')
-    auc_meter = AverageMeter(name='aucs')
+    auc_meter = AUCMeter(name='aucs')
 
     model.train()
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         load_time.update(time.time() - end)
+        print(f'data has size {data.size()}')
+        print(f'target has size {target.size()}')
 
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w).cuda()
@@ -33,6 +35,9 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         
         optimizer.zero_grad()
         output = model(data)
+        print(f'output has shape {output.size()}')
+        output = output.view(bs, n_crops, -1).mean(1)
+        print(f'output has shape {output.size()}')
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
