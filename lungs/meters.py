@@ -77,7 +77,7 @@ class AUCMeter(Meter):
 
     def add(self, output, target):
         if torch.is_tensor(output):
-            output = output.cpu().squeeze().numpy()
+            output = output.cpu().detach().squeeze().numpy()
         if torch.is_tensor(target):
             target = target.cpu().squeeze().numpy()
         elif isinstance(target, numbers.Number):

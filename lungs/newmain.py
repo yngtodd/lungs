@@ -23,8 +23,6 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         load_time.update(time.time() - end)
-        print(f'data has size {data.size()}')
-        print(f'target has size {target.size()}')
 
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w).cuda()
@@ -35,49 +33,48 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         
         optimizer.zero_grad()
         output = model(data)
-        print(f'output has shape {output.size()}')
         output = output.view(bs, n_crops, -1).mean(1)
-        print(f'output has shape {output.size()}')
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
  
         loss_meter.update(loss.item(), data.size(0))
-        auc_meter.add(output, target)
-        auc_meter.update()
+        #auc_meter.add(output, target)
+        #auc_meter.update()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, auc_meter)
 
 
-def validate(epoch, val_loader, model, args):
+def validate(epoch, val_loader, criterion, model, args):
     """"""
     load_time = AverageMeter(name='loading_time')
     batch_time = AverageMeter(name='batch_time')
     loss_meter = AverageMeter(name='losses')
-    auc_meter = AverageMeter(name='aucs')
+    #auc_meter = AverageMeter(name='aucs')
 
     model.eval()
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
         load_time.update(time.time() - end)
+
+        bs, n_crops, c, h, w = data.size()
+        data = data.view(-1, c, h, w).cuda()
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
         
-        optimizer.zero_grad()
         output = model(data)
+        output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
  
         loss_meter.update(loss.item(), data.size(0))
-        auc_meter.add(output, target)
-        auc_meter.update()
+        #auc_meter.add(output, target)
+        #auc_meter.update()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter, auc_meter)
+            print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter)
 
     
 def main():
