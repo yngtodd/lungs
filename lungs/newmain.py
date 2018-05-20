@@ -12,14 +12,11 @@ from lungs.utils.logger import print_progress
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
 
-def train(epoch, train_loader, optimizer, criterion, model, args):
+def train(epoch, train_loader, optimizer, criterion, model, meters, args):
     """"""
-    load_time = AverageMeter(name='loading_time')
-    batch_time = AverageMeter(name='batch_time')
-    loss_meter = AverageMeter(name='losses')
-    print(f'Average loss: {loss_meter.avg}')
-    #auc_meter = AUCMeter(name='aucs')
-    mapmeter = mAPMeter()
+    loss_meter = meters['train_loss']
+    batch_time = meters['train_time']
+    mapmeter = meters['train_mavep'] 
 
     model.train()
     end = time.time()
@@ -40,21 +37,17 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         loss.backward()
         optimizer.step()
         loss_meter.update(loss.item(), data.size(0))
-        #auc_meter.add(output, target)
-        #auc_meter.update()
         mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
 
 
-def validate(epoch, val_loader, criterion, model, args):
+def validate(epoch, val_loader, criterion, model, meters, args):
     """"""
-    load_time = AverageMeter(name='loading_time')
-    batch_time = AverageMeter(name='batch_time')
-    loss_meter = AverageMeter(name='losses')
-    #auc_meter = AverageMeter(name='aucs')
-    mapmeter = mAPMeter()
+    loss_meter = meters['val_loss']
+    batch_time = meters['val_time']
+    mapmeter = meters['val_mavep']
 
     model.eval()
     end = time.time()
@@ -73,8 +66,6 @@ def validate(epoch, val_loader, criterion, model, args):
         loss = criterion(output, target)
  
         loss_meter.update(loss.item(), data.size(0))
-        #auc_meter.add(output, target)
-        #auc_meter.update()
         mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
@@ -108,14 +99,23 @@ def main():
     if args.cuda:
         criterion.cuda()
 
-    val_loss = AverageMeter(name='losses')
-    mapmeter = mAPMeter()
+    train_meters = {
+      'train_loss': AverageMeter(name='trainloss')
+      'train_time': AverageMeter(name='traintime')
+      'train_mavep': mAPMeter() 
+    }
+
+    val_meters = {
+      'val_loss': AverageMeter(name='valloss')
+      'val_time': AverageMeter(name='valtime')
+      'val_mavep': mAPMeter()
+    }
 
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
     for epoch in range(1, args.num_epochs+1):
-        train(epoch, train_loader, optimizer, criterion, model, args)
-        validate(epoch, val_loader, criterion, model, args)
+        train(epoch, train_loader, optimizer, criterion, model, train_meters, args)
+        validate(epoch, val_loader, criterion, model, val_meters, args)
         epoch_time.update(time.time() - end)
         end = time.time()
 
