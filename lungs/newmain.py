@@ -21,8 +21,6 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
     model.train()
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
-        load_time.update(time.time() - end)
-
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w).cuda()
         
@@ -36,12 +34,15 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
+  
+        batch_time.update(time.time() - end)
         loss_meter.update(loss.item(), data.size(0))
         mapmeter.update(output, target)
+        end = time.time()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
-
+   
 
 def validate(epoch, val_loader, criterion, model, meters, args):
     """"""
@@ -52,8 +53,6 @@ def validate(epoch, val_loader, criterion, model, meters, args):
     model.eval()
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
-        load_time.update(time.time() - end)
-
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w).cuda()
         
@@ -64,9 +63,11 @@ def validate(epoch, val_loader, criterion, model, meters, args):
         output = model(data)
         output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
- 
+
+        batch_time.update(time.time() - end) 
         loss_meter.update(loss.item(), data.size(0))
         mapmeter.update(output, target)
+        end = time.time()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
@@ -91,7 +92,6 @@ def main():
         model = nn.DataParallel(model)
         model.cuda()
     model.cuda()
-    print(f'Finished loading model in {time.time() - end}')
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
