@@ -100,14 +100,14 @@ def main():
         criterion.cuda()
 
     train_meters = {
-      'train_loss': AverageMeter(name='trainloss')
-      'train_time': AverageMeter(name='traintime')
+      'train_loss': AverageMeter(name='trainloss'),
+      'train_time': AverageMeter(name='traintime'),
       'train_mavep': mAPMeter() 
     }
 
     val_meters = {
-      'val_loss': AverageMeter(name='valloss')
-      'val_time': AverageMeter(name='valtime')
+      'val_loss': AverageMeter(name='valloss'),
+      'val_time': AverageMeter(name='valtime'),
       'val_mavep': mAPMeter()
     }
 
