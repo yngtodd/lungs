@@ -11,13 +11,13 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('-d','--data', metavar='DIR',default='../data/exampleX-ray14/images',
+    parser.add_argument('-d','--data', metavar='DIR',default='/mnt/data/ChestXRay14/images',
                         help='path to dataset')
-    parser.add_argument('--traintxt', type=str, default='../data/exampleX-ray14/labels/train_list.txt',
+    parser.add_argument('--traintxt', type=str, default='../data/chestX-ray14/hyperlabels/train_list.txt',
                         help='path to training set text info (image names + labelss')
-    parser.add_argument('--valtxt', type=str, default='../data/exampleX-ray14/labels/val_list.txt',
+    parser.add_argument('--valtxt', type=str, default='../data/chestX-ray14/hyperlabels/val_list.txt',
                         help='path to validation set text info')
-    parser.add_argument('--texttxt', type=str, default='../data/exampleX-ray14/labels/test_list.txt',
+    parser.add_argument('--texttxt', type=str, default='../data/chestX-ray14/hyperlabels/test_list.txt',
                         help='path to test set text info')
     parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')

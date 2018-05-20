@@ -12,6 +12,7 @@ from lungs.utils.logger import print_progress
 from lungs.meters import AverageMeter, mAPMeter
 
 from skopt import forest_minimize
+from skopt import dump
 
 
 def train(epoch, train_loader, optimizer, criterion, model, args):
@@ -19,6 +20,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     batch_time = AverageMeter(name='batch_time')
     loss_meter = AverageMeter(name='losses')
     mapmeter = mAPMeter()
+    num_samples = len(train_loader)
 
     model.train()
     end = time.time()
@@ -36,11 +38,13 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
+   
+        batch_time.update(time.time() - end)
         loss_meter.update(loss.item(), data.size(0))
         mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
+            print_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
     return loss_meter.avg
 
@@ -50,6 +54,7 @@ def validate(epoch, val_loader, criterion, model, args):
     batch_time = AverageMeter(name='batch_time')
     loss_meter = AverageMeter(name='losses')
     mapmeter = mAPMeter()
+    num_samples = len(val_loader)
 
     model.eval()
     end = time.time()
@@ -69,7 +74,7 @@ def validate(epoch, val_loader, criterion, model, args):
         mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
+            print_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
     
     return loss_meter.avg
     
@@ -132,6 +137,7 @@ def main():
 
     space = [(16,32), (2,6), (2,6), (2,6), (2,6), (1,4)]
     res_rf = forest_minimize(objective, space, n_calls=15, random_state=0, verbose=True)
+    dump(res_rf, 'optim_rf05202018')
 
 
 if __name__=="__main__":
