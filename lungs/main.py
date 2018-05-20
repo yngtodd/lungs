@@ -86,7 +86,6 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
     
-    end = time.time()
     model = LungXnet()
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
