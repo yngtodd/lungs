@@ -17,6 +17,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
     loss_meter = meters['train_loss']
     batch_time = meters['train_time']
     mapmeter = meters['train_mavep'] 
+    num_samples = len(train_loader)
 
     model.train()
     end = time.time()
@@ -41,7 +42,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
         end = time.time()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
+            print_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
    
 
 def validate(epoch, val_loader, criterion, model, meters, args):
@@ -49,6 +50,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
     loss_meter = meters['val_loss']
     batch_time = meters['val_time']
     mapmeter = meters['val_mavep']
+    num_samples = len(val_loader)
 
     model.eval()
     end = time.time()
@@ -70,7 +72,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
         end = time.time()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Validation', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
+            print_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
     
 def main():
