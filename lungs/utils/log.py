@@ -1,4 +1,4 @@
-def print_progress(context, epoch, num_epochs, batch, num_samples, timemeter, lossmeter, apmeter, aucmeter=None):
+def log_progress(context, epoch, num_epochs, batch, num_samples, timemeter, lossmeter, apmeter, aucmeter=None):
     """
     Prints current values and averages for AverageMeters
 
@@ -33,4 +33,4 @@ def print_progress(context, epoch, num_epochs, batch, num_samples, timemeter, lo
         auc = f"AUC: {aucmeter.area:.2f} TPR: {aucmeter.tpr:.2f} FPR: {aucmeter.fpr:.2f} "
         message += auc
 
-    print(message)
+    logger.info(message)

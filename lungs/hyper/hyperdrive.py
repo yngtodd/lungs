@@ -8,11 +8,16 @@ from lungs.data.loaders import XRayLoaders
 from lungs.models.lungXnet import LungXnet
 
 import time
-from lungs.utils.logger import print_progress
+import logging
+import logging.config
+from lungs.utils.log import log_progress
 from lungs.meters import AverageMeter, mAPMeter
 
 from skopt import forest_minimize
 from skopt import dump
+
+logging.config.fileConfig('../utils/logging.conf', defaults={'logfilename': './logs/optim.log'})
+logger = logging.getLogger(__name__)
 
 
 def train(epoch, train_loader, optimizer, criterion, model, args):
@@ -26,7 +31,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
-        data = data.view(-1, c, h, w).cuda()
+        data = data.view(-1, c, h, w)
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
@@ -44,7 +49,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+            log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
     return loss_meter.avg
 
@@ -60,7 +65,7 @@ def validate(epoch, val_loader, criterion, model, args):
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
         bs, n_crops, c, h, w = data.size()
-        data = data.view(-1, c, h, w).cuda()
+        data = data.view(-1, c, h, w)
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
@@ -74,7 +79,7 @@ def validate(epoch, val_loader, criterion, model, args):
         mapmeter.update(output, target)
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+            log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
     
     return loss_meter.avg
     
@@ -99,7 +104,6 @@ def objective(hyperparams):
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
-    model.cuda()
 
     global optimizer
     optimizer = optim.Adam(model.parameters(), lr=args.lr)

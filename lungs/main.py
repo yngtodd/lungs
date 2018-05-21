@@ -8,8 +8,15 @@ from lungs.data.loaders import XRayLoaders
 from lungs.models.lungXnet import LungXnet
 
 import time
-from lungs.utils.logger import print_progress
+from lungs.utils.log import log_progress
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
+
+import logging
+import logging.config
+
+
+logging.config.fileConfig('./utils/logging.conf', defaults={'logfilename': './logs/main.log'})
+logger = logging.getLogger(__name__)
 
 
 def train(epoch, train_loader, optimizer, criterion, model, meters, args):
@@ -23,7 +30,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
-        data = data.view(-1, c, h, w).cuda()
+        data = data.view(-1, c, h, w)
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
@@ -42,7 +49,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
         end = time.time()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+            log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
    
 
 def validate(epoch, val_loader, criterion, model, meters, args):
@@ -56,7 +63,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
         bs, n_crops, c, h, w = data.size()
-        data = data.view(-1, c, h, w).cuda()
+        data = data.view(-1, c, h, w)
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
@@ -72,7 +79,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
         end = time.time()
       
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            print_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+            log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
     
 def main():
@@ -92,7 +99,6 @@ def main():
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
-    model.cuda()
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
