@@ -10,13 +10,19 @@ from lungs.models.lungXnet import LungXnet
 import time
 import logging
 import logging.config
-from lungs.utils.log import log_progress
+from lungs.log import log_progress
 from lungs.meters import AverageMeter, mAPMeter
 
 from skopt import forest_minimize
 from skopt import dump
 
-logging.config.fileConfig('../utils/logging.conf', defaults={'logfilename': './logs/optim.log'})
+
+logging.config.fileConfig(
+  'logging.conf', 
+  defaults={'logfilename': './logs/optim.log'},
+  disable_existing_loggers=False
+)
+
 logger = logging.getLogger(__name__)
 
 

@@ -8,14 +8,14 @@ from lungs.data.loaders import XRayLoaders
 from lungs.models.lungXnet import LungXnet
 
 import time
-from lungs.utils.log import log_progress
+from lungs.log import log_progress
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
 import logging
 import logging.config
 
 
-logging.config.fileConfig('./utils/logging.conf', defaults={'logfilename': './logs/main.log'})
+logging.config.fileConfig('logging.conf', defaults={'logfilename': './logs/main.log'})
 logger = logging.getLogger(__name__)
 
 
@@ -105,6 +105,7 @@ def main():
     criterion = nn.BCELoss(size_average=True)
     if args.cuda:
         criterion.cuda()
+    criterion.cuda()
 
     train_meters = {
       'train_loss': AverageMeter(name='trainloss'),
@@ -118,6 +119,7 @@ def main():
       'val_mavep': mAPMeter()
     }
 
+    logger.info(f'Starting off!')
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
     for epoch in range(1, args.num_epochs+1):

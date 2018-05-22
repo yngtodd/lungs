@@ -1,9 +1,9 @@
-#import logging
-#import logging.config
+import logging
+import logging.config
 
 
-#logging.config.fileConfig('logging.conf', defaults={'logfilename': '../logs/main.log'})
-#logger = logging.getLogger(__name__)
+logging.config.fileConfig('logging.conf', defaults={'logfilename': './logs/main.log'})
+logger = logging.getLogger(__name__)
 
 
 def log_progress(context, epoch, num_epochs, batch, num_samples, timemeter, lossmeter, apmeter, aucmeter=None):
