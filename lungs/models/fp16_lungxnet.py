@@ -50,10 +50,10 @@ class fp16_LungXnet(nn.Module):
         self.model.add_module("conv_7", torch.nn.Conv2d(32*num_layers,64*num_layers,kernel_size=(8,8),stride=1,padding=0)) #16
         self.model.add_module("maxpool_7", torch.nn.MaxPool2d(kernel_size=2))
         self.model.add_module("relu_7", torch.nn.ReLU())
-        self.model.add_module("conv_8", torch.nn.Conv2d(128*num_layers,256*num_layers,kernel_size=(8,8),stride=1,padding=0)) #8
+        self.model.add_module("conv_8", torch.nn.Conv2d(64*num_layers,128*num_layers,kernel_size=(8,8),stride=1,padding=0)) #8
         self.model.add_module("maxpool_8", torch.nn.MaxPool2d(kernel_size=2))
         self.model.add_module("relu_8", torch.nn.ReLU())
-        self.model.add_module("full_connected", torch.nn.Linear(256*num_layers,output_dim))
+        self.model.add_module("full_connected", torch.nn.Linear(128*num_layers,output_dim))
 
     def forward(self, x):
         x = self.model(x)

@@ -28,8 +28,12 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
 
     model.train()
     end = time.time()
+    print(f'Args.fp16 is {args.fp16}')
     for batch_idx, (data, target) in enumerate(train_loader):
-        bs, n_crops, c, h, w = data.size()
+        if args.fp16:
+            bs, c, h, w = data.size()
+        else:
+            bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
         
         if args.cuda:
@@ -62,7 +66,9 @@ def validate(epoch, val_loader, criterion, model, meters, args):
     model.eval()
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
-        bs, n_crops, c, h, w = data.size()
+        if args.fp16:
+            bs, c, h, w = data.size()
+        else: bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
         
         if args.cuda:
