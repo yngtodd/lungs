@@ -100,7 +100,8 @@ class XRayLoaders:
             # Instantiate the dataset with
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              imagetxt=imagetxt
+              imagetxt=imagetxt,
+              transform=transforms.ToTensor()
              )
         elif self.train_transform is not None:
             dataset = self.DataSet(
@@ -146,7 +147,8 @@ class XRayLoaders:
             # Instantiate the dataset with
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              imagetxt=imagetxt
+              imagetxt=imagetxt,
+              transform=transforms.ToTensor()
              )
         elif self.val_transform is not None:
             dataset = self.DataSet(
@@ -192,7 +194,8 @@ class XRayLoaders:
             # Instantiate the dataset with
             dataset = self.DataSet(
               data_dir=self.data_dir,
-              imagetxt=imagetxt
+              imagetxt=imagetxt,
+              transform=transforms.ToTensor()
              )
         elif self.test_transform is not None:
             dataset = self.DataSet(
