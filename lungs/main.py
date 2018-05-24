@@ -32,8 +32,8 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
     for batch_idx, (data, target) in enumerate(train_loader):
         if args.fp16:
             bs, c, h, w = data.size()
-        else:
-            bs, n_crops, c, h, w = data.size()
+        else: #bs, n_crops, c, h, w = data.size()
+            bs, c, h, w = data.size()
         data = data.view(-1, c, h, w)
         
         if args.cuda:
@@ -45,7 +45,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
         optimizer.zero_grad()
         output = model(data)
         print("output size", output.size(), "target size", target.size())
-        #output = output.view(bs, n_crops, -1).mean(1)
+        #assert (output.data >= 0. & output.data <= 1.).all()
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
@@ -71,14 +71,17 @@ def validate(epoch, val_loader, criterion, model, meters, args):
     for batch_idx, (data, target) in enumerate(val_loader):
         if args.fp16:
             bs, c, h, w = data.size()
-        else: bs, n_crops, c, h, w = data.size()
+        else: bs, c, h, w = data.size()
         data = data.view(-1, c, h, w)
         
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-        
+        if args.fp16:
+            data = data.half()
+            target = target.half()
         output = model(data)
+        print(f'output has size {output.size()}')
         #output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
 
@@ -102,25 +105,27 @@ def main():
     if args.fp16:
         assert torch.backends.cudnn.enabled
     print("data loading started")
-	
+    	
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
     print("data loaded ")
     model = fp16_LungXnet(num_layers=64, output_dim=14)
-    if args.cuda and torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-        model.cuda()
-
     if args.fp16:
         model=model.cuda().half()
         print("model loaded in half precision")
+    elif args.cuda and torch.cuda.device_count() > 1:
+        model = nn.DataParallel(model)
+        model.cuda()
+    else:
+        model.cuda()
+
 
     print(model)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
-    criterion = nn.BCELoss(size_average=True)
+    criterion = nn.BCEWithLogitsLoss(size_average=True)
     if args.cuda:
         criterion.cuda()
     criterion.cuda()

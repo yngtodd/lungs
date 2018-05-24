@@ -28,6 +28,15 @@ class fp16_LungXnet(nn.Module):
     """
     def __init__(self,num_layers, output_dim=14):
         super(fp16_LungXnet, self).__init__()
+        self.conv1_block = nn.Sequential(nn.Conv2d(1,num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(512))
+        self.conv2_block = nn.Sequential(nn.Conv2d(num_layers,2*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(256))
+        self.conv3_block = nn.Sequential(nn.Conv2d(2*num_layers,4*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(128))
+        self.conv4_block = nn.Sequential(nn.Conv2d(4*num_layers,8*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(64))
+        self.conv5_block = nn.Sequential(nn.Conv2d(8*num_layers,16*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(32))
+        self.conv6_block = nn.Sequential(nn.Conv2d(16*num_layers,32*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(16))
+        self.fc = nn.Sequential(nn.Linear(524288,14))
+
+    '''
         self.model = torch.nn.Sequential()
         self.model.add_module("conv_1", torch.nn.Conv2d(1,num_layers,kernel_size=(8,8),stride=1,padding=0)) #1024
         self.model.add_module("maxpool_1", torch.nn.AdaptiveMaxPool2d(512))
@@ -52,8 +61,15 @@ class fp16_LungXnet(nn.Module):
         self.model.add_module("relu_7", torch.nn.ReLU())
         self.model.add_module("full_connected", torch.nn.Linear(8,output_dim))
         self.squash = nn.Sigmoid()
-
+    '''
     def forward(self, x):
-        x = self.model(x)
-        x = self.squash(x)
-        return x 
+        x = self.conv1_block(x)
+        x = self.conv2_block(x)
+        x  = self.conv3_block(x)
+        x  = self.conv4_block(x)
+        x = self.conv5_block(x)
+        x = self.conv6_block(x)
+        x = x.view(x.size(0), -1)
+        print("x.size",x.size())
+        return self.fc(x)
+
