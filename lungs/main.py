@@ -5,7 +5,7 @@ from torch.autograd import Variable
 
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
-from lungs.models.lungXnet import LungXnet
+from lungs.models.lungXnet import LungXnet 
 
 import time
 from lungs.log import log_progress
@@ -122,6 +122,7 @@ def main():
     logger.info(f'Starting off!')
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
+    print(f'Number of epochs: {args.num_epochs}')
     for epoch in range(1, args.num_epochs+1):
         train(epoch, train_loader, optimizer, criterion, model, train_meters, args)
         validate(epoch, val_loader, criterion, model, val_meters, args)

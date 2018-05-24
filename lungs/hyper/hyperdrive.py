@@ -57,6 +57,10 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
+    if epoch == args.num_epochs:
+        del data, target
+        torch.cuda.empty_cache()
+
     return loss_meter.avg
 
 
@@ -87,6 +91,10 @@ def validate(epoch, val_loader, criterion, model, args):
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
     
+    if epoch == args.num_epochs:
+        del data, target
+        torch.cuda.empty_cache()
+
     return loss_meter.avg
     
 

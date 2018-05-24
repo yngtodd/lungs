@@ -25,7 +25,7 @@ def parse_args():
                         help='number of total epochs to run (default: 100)')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='S',
                         help='manual epoch number (useful on restarts)')
-    parser.add_argument('-b', '--batch_size', default=30, type=int,
+    parser.add_argument('-b', '--batch_size', default=15, type=int,
                         metavar='N', help='mini-batch size (default: 2)')
     parser.add_argument('--lr', '--learning_rate', default=1e-4, type=float,
                         metavar='LR', help='initial learning rate')
