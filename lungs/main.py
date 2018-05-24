@@ -92,12 +92,13 @@ def main():
     
     if args.fp16:
         assert torch.backends.cudnn.enabled
+    print("data loading started")
 	
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
-    
+    print("data loaded ")
     model = fp16_LungXnet(num_layers=64, output_dim=14)
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
@@ -105,6 +106,8 @@ def main():
 
     if args.fp16 and args.cuda:
         model=model.cuda().half()
+        print("model loaded in half precision")
+
     print(model)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     

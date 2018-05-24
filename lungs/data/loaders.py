@@ -77,7 +77,7 @@ class XRayLoaders:
         self.val_transform = val_transform
         self.test_transform = test_transform
 
-    def train_loader(self, imagetxt, shuffle=True, transform=True):
+    def train_loader(self, imagetxt, shuffle=True, transform=False):
         """
         Create trainloader with options for data transforms
 
@@ -123,7 +123,7 @@ class XRayLoaders:
 
         return loader
 
-    def val_loader(self, imagetxt, shuffle=True, transform=True):
+    def val_loader(self, imagetxt, shuffle=True, transform=False):
         """
         Create valloader with options for data transforms
 
@@ -169,7 +169,7 @@ class XRayLoaders:
 
         return loader
 
-    def test_loader(self, imagetxt, shuffle=True, transform=True):
+    def test_loader(self, imagetxt, shuffle=True, transform=False):
         """
         Create testloader with options for data transforms
 
