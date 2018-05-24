@@ -104,7 +104,7 @@ def main():
         model = nn.DataParallel(model)
         model.cuda()
 
-    if args.fp16 and args.cuda:
+    if args.fp16:
         model=model.cuda().half()
         print("model loaded in half precision")
 
