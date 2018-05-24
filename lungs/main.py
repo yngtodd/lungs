@@ -39,10 +39,13 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-        
+        if args.fp16:
+            data = data.half()
+            target = target.half()
         optimizer.zero_grad()
         output = model(data)
-        output = output.view(bs, n_crops, -1).mean(1)
+        print("output size", output.size(), "target size", target.size())
+        #output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
@@ -76,7 +79,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
             target = target.cuda(non_blocking=True)
         
         output = model(data)
-        output = output.view(bs, n_crops, -1).mean(1)
+        #output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
 
         batch_time.update(time.time() - end) 
