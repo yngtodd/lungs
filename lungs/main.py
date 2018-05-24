@@ -5,7 +5,7 @@ from torch.autograd import Variable
 
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
-from lungs.models.lungXnet import LungXnet
+from lungs.models.fp16_lungxnet import fp16_LungXnet
 
 import time
 from lungs.log import log_progress
@@ -90,16 +90,22 @@ def main():
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
     
+    if args.fp16:
+        assert torch.backends.cudnn.enabled
+	
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
     
-    model = LungXnet()
+    model = fp16_LungXnet()
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
 
+    if args.fp16 and args.cuda:
+        model=model.cuda().half()
+    print(model)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     
     criterion = nn.BCELoss(size_average=True)
@@ -122,7 +128,7 @@ def main():
     logger.info(f'Starting off!')
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
-    for epoch in range(1, args.num_epochs+1):
+    for epoch in range(1, 3):
         train(epoch, train_loader, optimizer, criterion, model, train_meters, args)
         validate(epoch, val_loader, criterion, model, val_meters, args)
         epoch_time.update(time.time() - end)

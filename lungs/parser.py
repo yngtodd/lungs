@@ -59,5 +59,7 @@ def parse_args():
                         help='disables cuda training')
     parser.add_argument('--seed', type=int, default=42,
                         help='random seed for experiments. [default: 42]')
-    args = parser.parse_args()
+    parser.add_argument('--fp16', action='store_true',
+                        help='running model in half precision')
+   args = parser.parse_args()
     return args
