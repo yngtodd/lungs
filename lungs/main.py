@@ -98,7 +98,7 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
     
-    model = fp16_LungXnet()
+    model = fp16_LungXnet(num_layers=64, output_dim=14)
     if args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
