@@ -44,7 +44,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
             target = target.half()
         optimizer.zero_grad()
         output = model(data)
-        print("output size", output.size(), "target size", target.size())
+        #print("output size", output.size(), "target size", target.size())
         #assert (output.data >= 0. & output.data <= 1.).all()
         loss = criterion(output, target)
         loss.backward()
@@ -81,7 +81,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
             data = data.half()
             target = target.half()
         output = model(data)
-        print(f'output has size {output.size()}')
+        #print(f'output has size {output.size()}')
         #output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
 

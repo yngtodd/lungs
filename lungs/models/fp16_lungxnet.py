@@ -70,6 +70,6 @@ class fp16_LungXnet(nn.Module):
         x = self.conv5_block(x)
         x = self.conv6_block(x)
         x = x.view(x.size(0), -1)
-        print("x.size",x.size())
+        #print("x.size",x.size())
         return self.fc(x)
 
