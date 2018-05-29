@@ -18,7 +18,7 @@ from skopt import dump
 
 
 logging.config.fileConfig(
-  'logging.conf', 
+  'logging.conf',
   defaults={'logfilename': './logs/optim.log'},
   disable_existing_loggers=False
 )
@@ -38,22 +38,22 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
-        
+
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-        
+
         optimizer.zero_grad()
         output = model(data)
         output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
-   
+
         batch_time.update(time.time() - end)
         loss_meter.update(loss.item(), data.size(0))
         mapmeter.update(output, target)
-      
+
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
@@ -76,27 +76,26 @@ def validate(epoch, val_loader, criterion, model, args):
     for batch_idx, (data, target) in enumerate(val_loader):
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
-        
+
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-        
+
         output = model(data)
         output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
- 
+
         loss_meter.update(loss.item(), data.size(0))
         mapmeter.update(output, target)
-      
+
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
-    
+
     if epoch == args.num_epochs:
         del data, target
         torch.cuda.empty_cache()
 
     return loss_meter.avg
-    
 
 
 def objective(hyperparams):
@@ -131,8 +130,8 @@ def objective(hyperparams):
     #train_loss.save(path=args.logspath)
     #val_loss.save(path=args.logspath)
     return val_loss.avg
-   
- 
+
+
 def main():
     global args
     args = parse_args()
@@ -141,14 +140,14 @@ def main():
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
-    
+
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
     global train_loader, val_loader
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
-   
-    global criterion 
+
+    global criterion
     criterion = nn.BCELoss(size_average=True)
     if args.cuda:
         criterion.cuda()
