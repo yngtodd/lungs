@@ -147,9 +147,9 @@ def main():
     end = time.time()
     '''
     start = time.time()
-    for epoch in range(1, 3):
+    for epoch in range(1, args.epoch):
         train(epoch, train_loader, optimizer, criterion, model, args)
-        validate(epoch, val_loader, criterion, model, args)
+        #validate(epoch, val_loader, criterion, model, args)
     
     print("\nJob's done! Total runtime:",time.time()-start)
 
