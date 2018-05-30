@@ -147,7 +147,7 @@ def main():
     end = time.time()
     '''
     start = time.time()
-    for epoch in range(1, args.epoch):
+    for epoch in range(1, 6):
         train(epoch, train_loader, optimizer, criterion, model, args)
         #validate(epoch, val_loader, criterion, model, args)
     
