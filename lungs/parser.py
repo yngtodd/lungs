@@ -11,11 +11,11 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('-d','--data', metavar='DIR',default='./data/exampleX-ray14/images',
+    parser.add_argument('-d','--data', metavar='DIR',default='/mnt/data/ChestXRay14/images',
                         help='path to dataset')
-    parser.add_argument('--traintxt', type=str, default='./data/exampleX-ray14/labels/train_list.txt',
+    parser.add_argument('--traintxt', type=str, default='/mnt/data/ChestXRay14/train_list.txt',
                         help='path to training set text info (image names + labelss')
-    parser.add_argument('--valtxt', type=str, default='./data/exampleX-ray14/labels/val_list.txt',
+    parser.add_argument('--valtxt', type=str, default='/mnt/data/ChestXRay14/val_list.txt',
                         help='path to validation set text info')
     parser.add_argument('--texttxt', type=str, default='./data/exampleX-ray14/labels/test_list.txt',
                         help='path to test set text info')
@@ -25,7 +25,7 @@ def parse_args():
                         help='number of total epochs to run (default: 100)')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='S',
                         help='manual epoch number (useful on restarts)')
-    parser.add_argument('-b', '--batch_size', default=2, type=int,
+    parser.add_argument('-b', '--batch_size', default=16, type=int,
                         metavar='N', help='mini-batch size (default: 2)')
     parser.add_argument('--lr', '--learning_rate', default=1e-4, type=float,
                         metavar='LR', help='initial learning rate')
@@ -59,5 +59,7 @@ def parse_args():
                         help='disables cuda training')
     parser.add_argument('--seed', type=int, default=42,
                         help='random seed for experiments. [default: 42]')
+    parser.add_argument('--parallel', default=False,
+                        help='Whether to use data parallelism')
     args = parser.parse_args()
     return args
