@@ -39,13 +39,7 @@ class XRayLoaders:
                                      [0.229, 0.224, 0.225])
 
     train_default = transforms.Compose([
-        transforms.Resize(256),
-        transforms.TenCrop(224),
-        transforms.Lambda
-        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-        transforms.Lambda
-        (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
-    ])
+        transforms.Resize(256),transforms.ToTensor()])
 
     val_default = transforms.Compose([
         transforms.Resize(256),
@@ -77,7 +71,7 @@ class XRayLoaders:
         self.val_transform = val_transform
         self.test_transform = test_transform
 
-    def train_loader(self, imagetxt, shuffle=True, transform=False):
+    def train_loader(self, imagetxt, shuffle=True, transform=True):
         """
         Create trainloader with options for data transforms
 

@@ -30,11 +30,12 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     end = time.time()
     print(f'Args.fp16 is {args.fp16}')
     for batch_idx, (data, target) in enumerate(train_loader):
+        #print("data shape",data.size())
         if args.fp16:
-            bs,n_crops, c, h, w = data.size()
+            bs, c, h, w = data.size()
             data= data.view(-1,c,h,w)
         else: #bs, n_crops, c, h, w = data.size()
-            bs, n_crops,c, h, w = data.size()
+            bs,c, h, w = data.size()
         data = data.view(-1, c, h, w)
         
         if args.cuda:
@@ -45,7 +46,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
             target = target.half()
         optimizer.zero_grad()
         output = model(data)
-        output = output.view(bs,n_crops, -1).mean(1)
+        #output = output.view(bs,n_crops, -1).mean(1)
         #print("output size", output.size(), "target size", target.size())
         #assert (output.data >= 0. & output.data <= 1.).all()
         loss = criterion(output, target)
@@ -112,7 +113,7 @@ def main():
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
-    val_loader = loaders.val_loader(imagetxt=args.valtxt)
+    #val_loader = loaders.val_loader(imagetxt=args.valtxt)
     print("data loaded ")
     model = hj_fp16(num_layers=64, output_dim=14)
     if args.fp16:
