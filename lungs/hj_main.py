@@ -117,6 +117,7 @@ def main():
     print("data loaded ")
     model = hj_fp16(num_layers=64, output_dim=14)
     if args.fp16:
+        model = nn.DataParallel(model)
         model=model.cuda().half()
         print("model loaded in half precision")
     elif args.cuda and torch.cuda.device_count() > 1:

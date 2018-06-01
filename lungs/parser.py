@@ -21,7 +21,7 @@ def parse_args():
                         help='path to test set text info')
     parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
-    parser.add_argument('--num_epochs', default=3, type=int, metavar='N',
+    parser.add_argument('--num_epochs', default=4, type=int, metavar='N',
                         help='number of total epochs to run (default: 100)')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='S',
                         help='manual epoch number (useful on restarts)')
