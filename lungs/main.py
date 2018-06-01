@@ -104,7 +104,7 @@ def main():
     if args.cuda and not args.parallel:
         model.cuda().half()
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
     criterion = nn.BCEWithLogitsLoss(size_average=True)
     if args.cuda:
