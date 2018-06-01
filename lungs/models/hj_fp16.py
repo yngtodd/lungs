@@ -42,9 +42,20 @@ class hj_fp16(nn.Module):
         self.conv6_block = nn.Sequential(nn.Conv2d(16*num_layers,32*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(16))
         self.fc1 = nn.Sequential(nn.Linear(524288,128),nn.ReLU(),nn.Dropout2d(0.5))
         self.fc2 = nn.Sequential(nn.Linear(128,14))
-    '''
-        self.model = torch.nn.Sequential()
-        self.model.add_module("conv_1", torch.nn.Conv2d(1,num_layers,kernel_size=(8,8),stride=1,padding=0)) #1024
-        self.model.add_module("maxpool_1", torch.nn.AdaptiveMaxPool2d(512))
-        self.model.add_module("relu_1", torch.nn.ReLU())
-        self.model.add_module("conv_2", torch.nn.Conv2d(num_layers,2*num_layers,kernel_size=(8,8),stride=1,padding=0)) #512
+    
+	def forward(self, x):
+        x = self.conv1_block(x)
+        x = self.conv2_block(x)
+        x  = self.conv3_block(x)
+        x  = self.conv4_block(x)
+        x = self.conv5_block(x)
+        x = self.conv6_block(x)
+        x = x.view(x.size(0), -1)
+        #print("x.size",x.size())
+        x = self.fc1(x)
+        #print("x.size",x.size())
+        return self.fc2(x)
+
+
+		
+
