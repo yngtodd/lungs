@@ -39,8 +39,7 @@ class hj_fp16(nn.Module):
         self.conv3_block = nn.Sequential(nn.Conv2d(2*num_layers,4*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(32),nn.Dropout(0.25))
         self.conv4_block = nn.Sequential(nn.Conv2d(4*num_layers,8*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(16),nn.Dropout(0.25))
         self.conv5_block = nn.Sequential(nn.Conv2d(8*num_layers,16*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(8),nn.Dropout(0.25))
-        self.conv6_block = nn.Sequential(nn.Conv2d(16*num_layers,32*num_layers,kernel_size=8,padding=0,stride=1),nn.ReLU(),nn.AdaptiveMaxPool2d(16))
-        self.fc1 = nn.Sequential(nn.Linear(524288,128),nn.ReLU(),nn.Dropout2d(0.5))
+        self.fc1 = nn.Sequential(nn.Linear(65536,128),nn.ReLU(),nn.Dropout2d(0.5))
         self.fc2 = nn.Sequential(nn.Linear(128,14))
     '''
         self.model = torch.nn.Sequential()
