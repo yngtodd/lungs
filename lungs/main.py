@@ -17,8 +17,6 @@ from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 import logging
 import logging.config
 
-torch.backends.cudnn.benchmark = True
-
 
 @record
 def train(epoch, train_loader, optimizer, criterion, model, meters, args):
@@ -90,6 +88,8 @@ def validate(epoch, val_loader, criterion, model, meters, args):
 
 
 def main():
+    torch.backends.cudnn.benchmark = True
+
     args = parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
 
