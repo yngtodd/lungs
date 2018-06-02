@@ -21,11 +21,11 @@ def parse_args():
                         help='path to test set text info')
     parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
-    parser.add_argument('--num_epochs', default=100, type=int, metavar='N',
+    parser.add_argument('--num_epochs', default=30, type=int, metavar='N',
                         help='number of total epochs to run (default: 100)')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='S',
                         help='manual epoch number (useful on restarts)')
-    parser.add_argument('-b', '--batch_size', default=2, type=int,
+    parser.add_argument('-b', '--batch_size', default=15, type=int,
                         metavar='N', help='mini-batch size (default: 2)')
     parser.add_argument('--lr', '--learning_rate', default=1e-4, type=float,
                         metavar='LR', help='initial learning rate')
@@ -39,7 +39,7 @@ def parse_args():
                         help='type of optimizer (default=Adam)')
     parser.add_argument('--weight-decay', '--wd', default=1e-5, type=float,
                         metavar='W', help='weight decay (default: 1e-4)')
-    parser.add_argument('--log_interval', '-p', default=2, type=int,
+    parser.add_argument('--log_interval', '-p', default=10, type=int,
                         metavar='N', help='print frequency (default: 2)')
     parser.add_argument('--resume', default='checkpoint.pth.tar', type=str, metavar='PATH',
                         help='path to latest checkpoint (default: checkpoint.pth.tar)')
