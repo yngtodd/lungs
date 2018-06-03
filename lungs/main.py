@@ -19,7 +19,7 @@ import logging.config
 
 
 @record
-def train(epoch, train_loader, optimizer, criterion, model, meters, args):
+def train(train_loader, optimizer, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['train_loss']
     batch_time = meters['train_time']
@@ -55,7 +55,7 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
    
 
 @record
-def validate(epoch, val_loader, criterion, model, meters, args):
+def validate(val_loader, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['val_loss']
     batch_time = meters['val_time']
@@ -133,8 +133,8 @@ def main():
     end = time.time()
     print(f'Number of epochs: {args.num_epochs}')
     for epoch in range(1, args.num_epochs+1):
-        train_loss, train_map = train(epoch, train_loader, optimizer, criterion, model, train_meters, args)
-        val_loss, val_map = validate(epoch, val_loader, criterion, model, val_meters, args)
+        train_loss, train_map = train(train_loader, optimizer, criterion, model, train_meters, args, epoch=epoch)
+        val_loss, val_map = validate(val_loader, criterion, model, val_meters, args, epoch=epoch)
         epoch_time.update(time.time() - end)
         end = time.time()
 

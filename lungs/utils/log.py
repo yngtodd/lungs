@@ -49,13 +49,16 @@ class record:
 
     def __call__(self, *args, **kwargs):
         logging.basicConfig(filename=f'{self.function.__name__}.log', level=logging.INFO)
+        
+        epoch = kwargs['epoch']
 
         t1 = time.time()
         loss, ave_prec = self.function(*args, *kwargs)
         t2 = time.time() - t1
 
         logging.info(
-          f'{self.function.__name__} runtime: {t2:.4f} seconds '\
+          f'{self.function.__name__} '\
+          f'epoch: {epoch} runtime: {t2:.4f} seconds '\
           f'loss: {loss} average precision: {ave_prec}'
         )
 
