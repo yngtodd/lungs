@@ -11,12 +11,6 @@ import time
 from lungs.utils.log import log_progress, record
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
-from lungs.log import log_progress, record
-from lungs.meters import AverageMeter, AUCMeter, mAPMeter
-
-import logging
-import logging.config
-
 
 @record
 def train(epoch, train_loader, optimizer, criterion, model, meters, args):
@@ -49,10 +43,10 @@ def train(epoch, train_loader, optimizer, criterion, model, meters, args):
         end = time.time()
 
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            log_progress('Train', epoch, args.num_epochs, batch_time, loss_meter, mapmeter)
+            log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
-    return loss_meter.avg, mapmeter.avg
-   
+    return loss_meter.avg, mapmeter.val
+
 
 @record
 def validate(epoch, val_loader, criterion, model, meters, args):
@@ -84,7 +78,7 @@ def validate(epoch, val_loader, criterion, model, meters, args):
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
-    return loss_meter.avg, mapmeter.avg
+    return loss_meter.avg, mapmeter.val
 
 
 def main():
@@ -128,7 +122,6 @@ def main():
       'val_mavep': mAPMeter()
     }
 
-    logger.info(f'Starting off!')
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
     print(f'Number of epochs: {args.num_epochs}')

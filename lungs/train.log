@@ -1,0 +1,2 @@
+INFO:root:train runtime: 85.7795 seconds loss: 0.9558429718017578 average precision: 0.05266657471656799
+INFO:root:validate runtime: 36.6901 seconds loss: 0.9564495086669922 average precision: 0.057859692722558975

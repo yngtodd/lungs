@@ -56,7 +56,7 @@ class record:
 
         logging.info(
           f'{self.function.__name__} runtime: {t2:.4f} seconds '\
-          f'loss: {loss} average precision: {ave_prec}'
+          f'loss: {loss:.4f} average precision: {ave_prec:.4f}'
         )
 
-        return loss, ave_prec 
+        return loss, ave_prec
