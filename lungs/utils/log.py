@@ -62,4 +62,4 @@ class record:
           f'loss: {loss} average precision: {ave_prec}'
         )
 
-        return loss, ave_prec 
+        return loss, ave_prec
