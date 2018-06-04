@@ -11,13 +11,13 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('-d','--data', metavar='DIR',default='/mnt/data/ChestXRay14/images',
+    parser.add_argument('-d','--data', metavar='DIR',default='/lustre/atlas/proj-shared/csc264/ChestXRay14/images',
                         help='path to dataset')
-    parser.add_argument('--traintxt', type=str, default='/mnt/data/ChestXRay14/train_list.txt',
+    parser.add_argument('--traintxt', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/train_list.txt',
                         help='path to training set text info (image names + labelss')
-    parser.add_argument('--valtxt', type=str, default='/mnt/data/ChestXRay14/val_list.txt',
+    parser.add_argument('--valtxt', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/val_list.txt',
                         help='path to validation set text info')
-    parser.add_argument('--texttxt', type=str, default='/mnt/data/ChestXRay14/test_list.txt',
+    parser.add_argument('--texttxt', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/test_list.txt',
                         help='path to test set text info')
     parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
@@ -59,7 +59,7 @@ def parse_args():
                         help='disables cuda training')
     parser.add_argument('--seed', type=int, default=42,
                         help='random seed for experiments. [default: 42]')
-    parser.add_argument('--fp16', default = True,  action='store_true',
+    parser.add_argument('--fp16', default = False,  action='store_true',
                         help='running model in half precision')
     parser.add_argument('--parallel', default = True,  action='store_true',
                         help='running model in parallel')

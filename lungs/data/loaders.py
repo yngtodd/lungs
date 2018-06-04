@@ -42,22 +42,22 @@ class XRayLoaders:
         transforms.Resize(256),transforms.ToTensor()])
 
     val_default = transforms.Compose([
-        transforms.Resize(256),
-        transforms.TenCrop(224),
-        transforms.Lambda
-        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-        transforms.Lambda
-        (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
-    ])
+        transforms.Resize(256),transforms.ToTensor()])
+        #transforms.TenCrop(224),
+        #transforms.Lambda
+        #(lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+        #transforms.Lambda
+        #(lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
+    #])
 
     test_default = transforms.Compose([
-        transforms.Resize(256),
-        transforms.TenCrop(224),
-        transforms.Lambda
-        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-        transforms.Lambda
-        (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
-    ])
+        transforms.Resize(256),transforms.ToTensor()])
+        #transforms.TenCrop(224),
+        #transforms.Lambda
+        #(lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+        #transforms.Lambda
+        #(lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops]))
+    #])
 
     def __init__(self, data_dir, batch_size,
                  DataSet=ChestXrayDataSet, pin_memory=True, num_workers=4,

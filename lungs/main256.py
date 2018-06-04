@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 
-from lungs.parser import parse_args
-from lungs.data.loaders import XRayLoaders
-from lungs.models.hj_fp16 import hj_fp16
+from parser import parse_args
+from data.loaders import XRayLoaders
+from models.hj_fp16 import hj_fp16
 
 import time
 #from lungs.log import log_progress
@@ -30,7 +30,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     end = time.time()
     print(f'Args.fp16 is {args.fp16}')
     for batch_idx, (data, target) in enumerate(train_loader):
-        #print("data shape",data.size())
+        print("data shape",data.size())
         if args.fp16:
             bs, c, h, w = data.size()
             data= data.view(-1,c,h,w)
@@ -120,7 +120,7 @@ def main():
         model = nn.DataParallel(model)
         model=model.cuda().half()
         print("model loaded in half precision and running in parallel")
-    elif args.cuda and args.parallel:
+    elif args.cuda and torch.cuda.device_count() > 1:
         model = nn.DataParallel(model)
         model.cuda()
         print("model loaded in single precision and in data parallel mode")
