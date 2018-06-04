@@ -61,5 +61,8 @@ def parse_args():
                         help='random seed for experiments. [default: 42]')
     parser.add_argument('--fp16', default = True,  action='store_true',
                         help='running model in half precision')
+    parser.add_argument('--parallel', default = True,  action='store_true',
+                        help='running model in parallel')
+
     args = parser.parse_args()
     return args
