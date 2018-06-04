@@ -1,0 +1,14 @@
+#!/bin/bash
+#BSUB -W 2:00
+#BSUB -P MED105
+#BSUB -J data_parallel
+#BSUB -o n1a4g4
+#BSUB -e n1a4g4e
+#BSUB -nnodes 1
+#SUB -q batch
+
+source /sw/summitdev/init/profile
+module use /lustre/atlas/proj-shared/csc264/modules/modulefiles
+module load deeplearning
+module list
+jsrun -n 1 -a 4 -g 4 python main256.py
