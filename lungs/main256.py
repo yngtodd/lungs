@@ -116,19 +116,22 @@ def main():
     #val_loader = loaders.val_loader(imagetxt=args.valtxt)
     print("data loaded ")
     model = hj_fp16(num_layers=64, output_dim=14)
-    if args.fp16:
+    if args.fp16 and args.parallel:
         model = nn.DataParallel(model)
         model=model.cuda().half()
-        print("model loaded in half precision")
-    elif args.cuda and torch.cuda.device_count() > 1:
+        print("model loaded in half precision and running in parallel")
+    elif args.cuda and args.parallel:
         model = nn.DataParallel(model)
         model.cuda()
+        print("model loaded in single precision and in data parallel mode")
+    elif args.fp16:
+        model=model.cuda().half()
+        print("model loaded in half precision")
     else:
         model.cuda()
 
-
     print(model)
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
     
     criterion = nn.BCEWithLogitsLoss()
     if args.cuda:
