@@ -146,8 +146,10 @@ def main():
     if args.cuda and args.parallel:
         model = nn.DataParallel(model)
         model = model.cuda()
+        print("model loaded in parallel")
     else:
         model.cuda()
+        print("model loaded in serial")
 	
     print(model)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr*hvd.size())
