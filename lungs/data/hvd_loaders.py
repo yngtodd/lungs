@@ -115,7 +115,7 @@ class XRayLoaders:
         train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
         loader = DataLoader(
-          dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
+          dataset=dataset, batch_size=self.batch_size,
           sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
         )
 
@@ -162,7 +162,7 @@ class XRayLoaders:
         train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
         loader = DataLoader(
-          dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
+          dataset=dataset, batch_size=self.batch_size,
           sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
         )
 
@@ -209,7 +209,7 @@ class XRayLoaders:
         train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
         loader = DataLoader(
-          dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
+          dataset=dataset, batch_size=self.batch_size,
           sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
         )
 
