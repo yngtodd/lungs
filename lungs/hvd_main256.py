@@ -30,7 +30,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
     end = time.time()
     print(f'Args.fp16 is {args.fp16}')
     for batch_idx, (data, target) in enumerate(train_loader):
-        print("data shape",data.size())
+        #print("data shape",data.size())
         if args.fp16:
             bs, c, h, w = data.size()
             data= data.view(-1,c,h,w)

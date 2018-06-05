@@ -13,4 +13,4 @@ module load cuda cudnn
 module load pytorch/0.4.0-spectrum20180510
 export PATH="/ccs/home/kshitij/miniconda3/bin:$PATH"
 module list
-jsrun -n 1 -a 6 -g 6 python main256.py
+jsrun -n 1 -a 1 -g 6 python hvd_main256.py
