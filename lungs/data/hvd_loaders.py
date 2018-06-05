@@ -3,7 +3,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from parser import parse_args
 from lungs.data.data import ChestXrayDataSet
-
+import torch.utils.data.distributed
 
 class XRayLoaders:
     """
@@ -60,13 +60,15 @@ class XRayLoaders:
     #])
 
     def __init__(self, data_dir, batch_size,
-                 DataSet=ChestXrayDataSet, pin_memory=True, num_workers=4,
+                 DataSet=ChestXrayDataSet, pin_memory=True,num_workers=1, hvd_size=None, rank = None,
                  train_transform=None, val_transform=None, test_transform=None):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.DataSet = DataSet
         self.pin_memory = pin_memory
-        self.num_workers = num_workers
+        self.hvd_size = hvd_size
+		self.num_workers=num_workers
+		self.rank = rank
         self.train_transform = train_transform
         self.val_transform = val_transform
         self.test_transform = test_transform
@@ -110,10 +112,11 @@ class XRayLoaders:
               transform=XRayLoaders.train_default
             )
 
+		train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
         loader = DataLoader(
           dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
-          num_workers=self.num_workers, pin_memory=self.pin_memory
+          sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
         )
 
         return loader
@@ -156,11 +159,11 @@ class XRayLoaders:
               imagetxt=imagetxt,
               transform=XRayLoaders.val_default
             )
-
+		train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
         loader = DataLoader(
           dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
-          num_workers=self.num_workers, pin_memory=self.pin_memory
+          sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
         )
 
         return loader
@@ -203,11 +206,11 @@ class XRayLoaders:
               imagetxt=imagetxt,
               transform=XRayLoaders.test_default
             )
-
+		train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
         loader = DataLoader(
           dataset=dataset, batch_size=self.batch_size, shuffle=shuffle,
-          num_workers=self.num_workers, pin_memory=self.pin_memory
+          sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
         )
 
         return loader

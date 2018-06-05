@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
-
+import horovod.torch as hvd
 from parser import parse_args
-from data.loaders import XRayLoaders
+from data.hvd_loaders import XRayLoaders
 from models.hj_fp16 import hj_fp16
-
+import torch.utils.data.distributed
 import time
 #from lungs.log import log_progress
 #from lungs.meters import AverageMeter, AUCMeter, mAPMeter
@@ -57,7 +57,8 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         #loss_meter.update(loss.item(), data.size(0))
         #mapmeter.update(output, target)
         #end = time.time()
-      
+    if hvd.rank()==0:
+		print("time per epoch",time.time()-end)
         #if batch_idx % args.log_interval == 0 and batch_idx > 0:
             #log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
     print("time taken for training epoch",time.time()-end)   
@@ -102,21 +103,32 @@ def main():
     args = parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
+	hvd.init()
+	print("horovod initialized with world size",hvd.size())
     torch.manual_seed(args.seed)
     if args.cuda:
+		torch.cuda.set_device(hvd.local_rank())
         torch.cuda.manual_seed(args.seed)
     
     if args.fp16:
         assert torch.backends.cudnn.enabled
     print("data loading started")
     	
-    # Data loading
-    loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
-    train_loader = loaders.train_loader(imagetxt=args.traintxt)
-    #val_loader = loaders.val_loader(imagetxt=args.valtxt)
-    print("data loaded ")
+    # Data loadingi
+	if args.summit:
+    	loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
+    	train_loader = loaders.train_loader(imagetxt=args.traintxt)
+		val_loader = loaders.val_loader(imagetxt=args.valtxt)
+		print("data loaded for Summit")
+	else:
+		loaders = XRayLoaders(data_dir=args.data_dev, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
+		train_loader = loaders.train_loader(imagetxt=args.traintxt_dev)
+    	val_loader = loaders.val_loader(imagetxt=args.valtxt_dev)
+		print("data loaded for summitdev")
+
     model = hj_fp16(num_layers=64, output_dim=14)
-    if args.fp16 and args.parallel:
+    '''
+	if args.fp16 and args.parallel:
         model = nn.DataParallel(model)
         model=model.cuda().half()
         print("model loaded in half precision and running in parallel")
@@ -129,9 +141,19 @@ def main():
         print("model loaded in half precision")
     else:
         model.cuda()
-
+    '''
+	if args.cuda and args.parallel:
+		model = nn.DataParallel(model)
+		model = model.cuda()
+	else:
+		model.cuda()
+	
     print(model)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr*hvd.size())
+	#Horovod Optimizer
+	optimizer = hvd.DistributedOptimizer(
+	    optimizer, named_parameters=model.named_parameters())
+	
     
     criterion = nn.BCEWithLogitsLoss()
     if args.cuda:

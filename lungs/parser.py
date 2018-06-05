@@ -11,6 +11,8 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
+	parser.add_argument('--data_dev', metavar='DIR',default='/lustre/atlas/proj-shared/csc264/ChestXRay14/images',
+                        help='path to dataset on summitdev')
     parser.add_argument('-d','--data', metavar='DIR',default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/images',
                         help='path to dataset')
     parser.add_argument('--traintxt', type=str, default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/train_list.txt',
@@ -19,7 +21,13 @@ def parse_args():
                         help='path to validation set text info')
     parser.add_argument('--texttxt', type=str, default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/test_list.txt',
                         help='path to test set text info')
-    parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
+    parser.add_argument('--traintxt_dev', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/train_list.txt',
+                        help='path to training set text info (image names + labelss')
+	parser.add_argument('--valtxt_dev', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/val_list.txt',
+                        help='path to training set text info (image names + labelss')
+	parser.add_argument('--texttxt_dev', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/test_list.txt',
+                        help='path to training set text info (image names + labelss')
+	parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
     parser.add_argument('--num_epochs', default=4, type=int, metavar='N',
                         help='number of total epochs to run (default: 100)')
@@ -63,6 +71,8 @@ def parse_args():
                         help='running model in half precision')
     parser.add_argument('--parallel', default = True,  action='store_true',
                         help='running model in parallel')
+	parser.add_argument('--summit', default = True,  action='store_true',
+                        help='where to run the code, summit or summitdev, false=summitdev')
 
     args = parser.parse_args()
     return args
