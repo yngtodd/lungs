@@ -11,5 +11,6 @@ source /sw/summit/init/profile
 module use /gpfs/alpinetds/csc276/proj-shared//modules/modulefiles
 module load cuda cudnn
 module load pytorch/0.4.0-spectrum20180510
+export PATH="/ccs/home/kshitij/miniconda3/bin:$PATH"
 module list
 jsrun -n 1 -a 6 -g 6 python main256.py

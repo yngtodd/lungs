@@ -11,13 +11,13 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('-d','--data', metavar='DIR',default='/lustre/atlas/proj-shared/csc264/ChestXRay14/images',
+    parser.add_argument('-d','--data', metavar='DIR',default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/images',
                         help='path to dataset')
-    parser.add_argument('--traintxt', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/train_list.txt',
+    parser.add_argument('--traintxt', type=str, default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/train_list.txt',
                         help='path to training set text info (image names + labelss')
-    parser.add_argument('--valtxt', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/val_list.txt',
+    parser.add_argument('--valtxt', type=str, default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/val_list.txt',
                         help='path to validation set text info')
-    parser.add_argument('--texttxt', type=str, default='/lustre/atlas/proj-shared/csc264/ChestXRay14/test_list.txt',
+    parser.add_argument('--texttxt', type=str, default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/test_list.txt',
                         help='path to test set text info')
     parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                         help='number of data loading workers (default: 4)')
