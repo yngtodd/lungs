@@ -13,7 +13,8 @@ Note: `any file with hvd corresponds to horovod implementation`
 | Nodes | First epoch | Subsequent epochs | Total time |
 |-------|-------------|-------------------|------------|
 |  1    |   170       |  153      | 478 |
-|   
+|  4    |    71       |   51      | 176 |
+|
 
 
 
