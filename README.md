@@ -10,6 +10,6 @@ The [ChestX-ray14 dataset](http://openaccess.thecvf.com/content_cvpr_2017/papers
 
 ## Profiling
 
-This branch is used for profiling the code in half precision. 
+This branch is used for data parallel
 
 
