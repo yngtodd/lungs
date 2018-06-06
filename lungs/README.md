@@ -2,7 +2,7 @@
 
 Note: `any file with hvd corresponds to horovod implementation`
 
-## RESULTS
+## RESULTS for Summit
 
 ### Horovod with n1a6g6 configuration
 
@@ -30,3 +30,32 @@ Note: `any file with hvd corresponds to horovod implementation`
 |  2    |    
 
 
+## RESULTS for Summit-dev
+
+### Horovod with n1a6g6 configuration
+
+- Data size = 4096
+- Batch size = 32
+- number of epochs = 3
+
+| Nodes | First epoch | Subsequent epochs | Total time |
+|-------|-------------|-------------------|------------|
+|  1    |  
+|  4    |   
+|  16   |  
+|  32   |
+
+
+
+### Horovod with n1a1g6 configuration with nn.DataParallel()
+
+- Data size = 4096
+- Batch size = 32
+- number of epochs = 3
+
+| Nodes | First epoch | Subsequent epochs | total time |
+|-------|-------------|-------------------|------------|
+|  1    |  
+|  4    |   
+|  16   |  
+|  32   |
