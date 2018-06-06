@@ -71,7 +71,7 @@ def parse_args():
                         help='running model in half precision')
     parser.add_argument('--parallel', action='store_true',
                         help='running model in parallel')
-    parser.add_argument('--summit', default = True,  action='store_true',
+    parser.add_argument('--summitdev',  action='store_true',
                         help='where to run the code, summit or summitdev, false=summitdev')
 
     args = parser.parse_args()

@@ -115,16 +115,17 @@ def main():
     print("data loading started")
     	
     # Data loadingi
-    if args.summit:
-        loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
-        train_loader = loaders.train_loader(imagetxt=args.traintxt)
-        val_loader = loaders.val_loader(imagetxt=args.valtxt)
-        print("data loaded for Summit")
-    else:
+    if args.summitdev:
         loaders = XRayLoaders(data_dir=args.data_dev, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
         train_loader = loaders.train_loader(imagetxt=args.traintxt_dev)
         val_loader = loaders.val_loader(imagetxt=args.valtxt_dev)
         print("data loaded for summitdev")
+    else:
+	loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
+        train_loader = loaders.train_loader(imagetxt=args.traintxt)
+        val_loader = loaders.val_loader(imagetxt=args.valtxt)
+        print("data loaded for Summit")
+
 
     model = hj_fp16(num_layers=64, output_dim=14)
     '''
