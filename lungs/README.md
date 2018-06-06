@@ -1,17 +1,31 @@
-## Profiling steps
+# Data parallel
 
-###
-`summit_main.py` is the file which uses 1K by 1K image
-`1hj_main.py` : uses 256 by 256 image and code from HJ which achieved 40TF on Keras + TF
+Note: `any file with hvd corresponds to horovod implementation`
 
-## Generate log file using nvprof
+## RESULTS
 
-nvprof --metrics flop_count_sp,flop_count_hp --log-file half_log_2attempt.log python summmit_main.py
+### Horovod with n1a6g6 configuration
 
-## calculating total number of flops
+- Data size = 4096
+- Batch size = 32
+- number of epochs = 4
 
-grep flop_count_sp half_log_2attempt.log | awk '{s+=$1*$9} END {printf "%.0f,", s}' >> count_2attempt.csv
+| Nodes | First epoch | Subsequent epochs | Total time |
+|-------|-------------|-------------------|------------|
+|  1    |   170       |  153      | 478 |
+|   
 
-## calculating number of FLOPS
 
-run the progam again without nvrpof, time it and divide the number in csv file with the run time. thats the FLOPS
+
+### Horovod with n1a1g6 configuration with nn.DataParallel()
+
+- Data size = 4096
+- Batch size = 32
+- number of epochs = 4
+
+| Nodes | First epoch | Subsequent epochs | total time |
+|-------|-------------|-------------------|------------|
+|  1    |     130     |       94    |   319  |
+|  2    |    
+
+
