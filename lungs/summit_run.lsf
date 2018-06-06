@@ -2,8 +2,8 @@
 #BSUB -W 2:00
 #BSUB -P CSC276
 #BSUB -J data_parallel
-#BSUB -o n1a6g6
-#BSUB -e n1a6g6e
+#BSUB -o n6a6g6
+#BSUB -e n6a6g6e
 #BSUB -nnodes 1
 #SUB -q batch
 
@@ -13,4 +13,4 @@ module load cuda cudnn
 module load pytorch/0.4.0-spectrum20180510
 export PATH="/ccs/home/kshitij/miniconda3/bin:$PATH"
 module list
-jsrun -n 1 -a 1 -g 6 python hvd_main256.py
+jsrun -n 6 -a 6 -g 6 python hvd_main256.py --parallel

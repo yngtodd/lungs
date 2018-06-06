@@ -69,7 +69,7 @@ def parse_args():
                         help='random seed for experiments. [default: 42]')
     parser.add_argument('--fp16', default = False,  action='store_true',
                         help='running model in half precision')
-    parser.add_argument('--parallel', default = True,  action='store_true',
+    parser.add_argument('--parallel', action='store_true',
                         help='running model in parallel')
     parser.add_argument('--summit', default = True,  action='store_true',
                         help='where to run the code, summit or summitdev, false=summitdev')
