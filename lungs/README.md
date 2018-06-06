@@ -8,7 +8,7 @@ Note: `any file with hvd corresponds to horovod implementation`
 
 - Data size = 4096
 - Batch size = 32
-- number of epochs = 4
+- number of epochs = 3
 
 | Nodes | First epoch | Subsequent epochs | Total time |
 |-------|-------------|-------------------|------------|
@@ -22,7 +22,7 @@ Note: `any file with hvd corresponds to horovod implementation`
 
 - Data size = 4096
 - Batch size = 32
-- number of epochs = 4
+- number of epochs = 3
 
 | Nodes | First epoch | Subsequent epochs | total time |
 |-------|-------------|-------------------|------------|
