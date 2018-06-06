@@ -14,7 +14,7 @@ Note: `any file with hvd corresponds to horovod implementation`
 |-------|-------------|-------------------|------------|
 |  1    |   170       |  153      | 478 |
 |  4    |    71       |   51      | 176 |
-|
+|  16   |    60       |   17      |  95 |
 
 
 
