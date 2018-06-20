@@ -11,7 +11,7 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('--data_dev', metavar='DIR',default='/lustre/atlas/proj-shared/med105/ChestXRay14/images',
+    parser.add_argument('--data_dev', metavar='DIR',default='/lustre/atlas/proj-shared/med105/ChestXRay14/256npy',
                         help='path to dataset on summitdev')
     parser.add_argument('-d','--data', metavar='DIR',default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/images',
                         help='path to dataset')

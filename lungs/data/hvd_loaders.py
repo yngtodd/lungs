@@ -3,7 +3,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from parser import parse_args
 #from lungs.data.data import ChestXrayDataSet
-from lungs.data.data_npy import ChestXrayDataSet
+from data.data_npy import ChestXrayDataSet
 import torch.utils.data.distributed
 
 class XRayLoaders:
@@ -74,7 +74,7 @@ class XRayLoaders:
         self.val_transform = val_transform
         self.test_transform = test_transform
 
-    def train_loader(self, imagetxt, shuffle=True, transform=True):
+    def train_loader(self, imagetxt, shuffle=True, transform=False):
         """
         Create trainloader with options for data transforms
 

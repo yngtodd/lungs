@@ -4,18 +4,19 @@ from parser import parse_args
 from data.loaders import XRayLoaders
 import numpy as np
 args = parse_args()
-'''
+
 loaders = XRayLoaders(data_dir=args.data_dev, batch_size=1)
-train_loader = loaders.train_loader(imagetxt=args.texttxt_dev,shuffle=False)
+train_loader = loaders.train_loader(imagetxt=args.traintxt_dev,shuffle=False,transform=False)
 number=[]
 numbers=0
 for i , (b,c) in enumerate(train_loader):
+    print(b.size())
     if b.size()[1]==4:
         number.append(i)
         numbers+=1
         print("count",numbers,"file",i)
     else: continue
-np.save("test_list.npy",number)
+#np.save("test_list.npy",number)
 '''
 imagetxt = args.traintxt_dev
 train = np.load("list_num.npy")
@@ -46,5 +47,5 @@ with open(imagetxt, "r") as f:
 
 np.save("file_names.npy",file_names)
 print("length of filenames",np.shape(file_names))
-
+'''
 
