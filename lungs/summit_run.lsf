@@ -1,9 +1,9 @@
 #!/bin/bash
-#BSUB -W 2:00
+#BSUB -W 0:10
 #BSUB -P MED105
 #BSUB -J data_parallel
-#BSUB -o n1a1g4
-#BSUB -e n1a1g4e
+#BSUB -o n1a4g4
+#BSUB -e n1a4g4e
 #BSUB -nnodes 1
 #SUB -q batch
 
@@ -15,9 +15,9 @@
 
 source /sw/summitdev/init/profile
 module use /lustre/atlas/proj-shared/csc264/modules/modulefiles/
+module purge
 module load deeplearning
-export PATH="/lustre/atlas/proj-shared/med105/kshitij/miniconda3/bin:$PATH"
-
+cd /lustre/atlas/proj-shared/med105/kshitij/lungs/lungs
 module list
 #jsrun -n 1 -a 1 -g 6 python hvd_main256.py --parallel
-jsrun -n 1 -a 1 -g 4 python hvd_main256.py --parallel --summitdev
+jsrun -n 1 -a 4 -g 4 python hvd_main256.py --summitdev

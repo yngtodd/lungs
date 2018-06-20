@@ -25,7 +25,7 @@ class ChestXrayDataSet(Dataset):
         with open(imagetxt, "r") as f:
             for line in f:
                 items = line.split()
-                image_name= str(items[0]) + str(".256.npy")
+                image_name= items[0] + ".256.npy"
                 label = items[1:]
                 label = [int(i) for i in label]
                 image_name = os.path.join(data_dir, image_name)
@@ -43,10 +43,7 @@ class ChestXrayDataSet(Dataset):
         """Get next image and label"""
         img = self.image_names[index]
         img = np.load(img)
-	img = img[:,:,0]
         label = self.labels[index]
 
-        if self.transform is not None:
-            img = self.transform(img)
-
         return img, torch.FloatTensor(label)
+

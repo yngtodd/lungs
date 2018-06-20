@@ -3,7 +3,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from parser import parse_args
 #from lungs.data.data import ChestXrayDataSet
-from lungs.data.data_npy import ChestXrayDataSet
+from data.data_npy import ChestXrayDataSet
 
 class XRayLoaders:
     """
