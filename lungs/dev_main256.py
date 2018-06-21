@@ -37,9 +37,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         else: #bs, n_crops, c, h, w = data.size()
             c, h, w = data.size()
         data = data.view(-1, c, h, w)
-        print("data shape",data.size())
         data = data.permute(1,0,2,3)
-        print("data shape permute",data.size())
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
@@ -80,7 +78,7 @@ def validate(epoch, val_loader, criterion, model, args):
             data = data.view(-1,c,h,w)
         else: bs, c, h, w = data.size()
         data = data.view(-1, c, h, w)
-        print("data shape",data.size())
+        data = data.permute(1,0,2,3)
         if args.cuda:
             data = data.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
