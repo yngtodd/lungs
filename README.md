@@ -1,5 +1,13 @@
 # lungXnet for Classification and Localization of Thoracic Diseases
 
+
+#BRANCHES IN THE REPO
+
+- `master` and `summit` - maintained by todd
+- `data_parallel` and `profiling` - maintained by kshitij
+
+
+## DESCRIPTION
 This is a Python3 (Pytorch) reimplementation of [CheXNet](https://stanfordmlgroup.github.io/projects/chexnet/). The model takes a chest X-ray image as input and outputs the probability of each thoracic disease along with a likelihood map of pathologies.
 
 <div align=center><img width="500" height="500" src="./img/00008473_011-3.png"/></div>
