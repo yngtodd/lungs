@@ -61,7 +61,7 @@ def train(epoch, train_loader, optimizer, criterion, model, args):
         print("time per epoch",time.time()-end)
         #if batch_idx % args.log_interval == 0 and batch_idx > 0:
             #log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
-    print("time taken for training epoch",time.time()-end)   
+    #print("time taken for training epoch",time.time()-end)   
 
 def validate(epoch, val_loader, criterion, model, args):
     """"""
@@ -97,7 +97,7 @@ def validate(epoch, val_loader, criterion, model, args):
       
         #if batch_idx % args.log_interval == 0 and batch_idx > 0:
             #log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
-    print("time taken for validation epoch",time.time()-end)
+    #print("time taken for validation epoch",time.time()-end)
     
 def main():
     args = parse_args()
@@ -184,8 +184,8 @@ def main():
     for epoch in range(1, args.num_epochs):
         train(epoch, train_loader, optimizer, criterion, model, args)
         #validate(epoch, val_loader, criterion, model, args)
-    
-    print("\nJob's done! Total runtime:",time.time()-start)
+    if hvd.rank()==0:
+        print("\nJob's done! Total runtime:",time.time()-start)
 
 
 if __name__=="__main__":
