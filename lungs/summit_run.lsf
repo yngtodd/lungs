@@ -20,4 +20,4 @@ module load deeplearning
 cd /lustre/atlas/proj-shared/med105/kshitij/lungs/lungs
 module list
 #jsrun -n 1 -a 1 -g 6 python hvd_main256.py --parallel
-jsrun -n 1 -a 4 -g 4 python hvd_main256.py --summitdev
+jsrun -n 1 -a 4 -g 4 python dev_main256.py --summitdev
