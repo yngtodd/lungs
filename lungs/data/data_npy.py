@@ -32,8 +32,8 @@ class ChestXrayDataSet(Dataset):
                 image_names.append(image_name)
                 labels.append(label)
 
-        self.image_names = image_names[:12288]
-        self.labels = labels[:12288]
+        self.image_names = image_names
+        self.labels = labels
         self.transform = transform
 
     def __len__(self):

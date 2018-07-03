@@ -1,17 +1,17 @@
 #!/bin/bash
-#BSUB -W 0:10
+#BSUB -W 3:00
 #BSUB -P MED105
 #BSUB -J data_parallel
-#BSUB -o halln4a1g4
-#BSUB -e halln4a1g4e
-#BSUB -nnodes 4
+#BSUB -o halln2a1g4
+#BSUB -e halln2a1g4e
+#BSUB -nnodes 2
 #BSUB -q batch
 #module use /gpfs/alpinetds/csc276/proj-shared/modules/modulefiles/
 #module load cuda cudnn
 #module load pytorch/0.4.0-spectrum20180510
 #export PATH="/ccs/home/kshitij/miniconda3/bin:$PATH"
-export HOROVOD_HIERARCHICAL_ALLREDUCE=1
 
+export HOROVOD_HIERARCHICAL_ALLREDUCE=1
 source /sw/summitdev/init/profile
 module use /lustre/atlas/proj-shared/csc264/modules/modulefiles/
 module purge
@@ -23,4 +23,4 @@ module list
 #jsrun -n 1 -a 1 -g 6 python hvd_main256.py --parallel
 #jsrun -n 2 -a 4 -g 4 python dev_main256.py --summitdev --num_epochs 5
 #jsrun -n 8 -a 1 -g 4 python dev_main256.py --summitdev --parallel --num_epochs 5
-jsrun -n 4 -a 1 -g 4 ./run.sh
+jsrun -n 2 -a 1 -g 4 ./run.sh

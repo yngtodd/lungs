@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from parser import parse_args
-from data.loaders import XRayLoaders
+from data.hpml_loaders import XRayLoaders
 import numpy as np
 args = parse_args()
 
@@ -10,12 +10,17 @@ train_loader = loaders.train_loader(imagetxt=args.traintxt_dev,shuffle=False,tra
 number=[]
 numbers=0
 for i , (b,c) in enumerate(train_loader):
+    print(type(b))
+    print(type(c))
+    print('---------')
+    '''
     print(b.size())
     if b.size()[1]==4:
         number.append(i)
         numbers+=1
         print("count",numbers,"file",i)
     else: continue
+    '''
 #np.save("test_list.npy",number)
 '''
 imagetxt = args.traintxt_dev

@@ -11,7 +11,7 @@ def parse_args():
         Parsed arguments.
     """
     parser = argparse.ArgumentParser(description='PyTorch lungXnet Training')
-    parser.add_argument('--data_dev', metavar='DIR',default='/lustre/atlas/proj-shared/med105/ChestXRay14/256npy',
+    parser.add_argument('--data_dev', metavar='DIR',default='/lustre/atlas/proj-shared/med105/ChestXRay14/images',
                         help='path to dataset on summitdev')
     parser.add_argument('-d','--data', metavar='DIR',default='/gpfs/alpinetds/proj-shared/csc276/data/ChestXRay14/images',
                         help='path to dataset')
@@ -74,5 +74,7 @@ def parse_args():
     parser.add_argument('--summitdev',  action='store_true',
                         help='where to run the code, summit or summitdev, false=summitdev')
 
+    parser.add_argument('--checkpoint-format', default='./checkpoint-{epoch}.pth.tar',
+                                help='checkpoint file format')
     args = parser.parse_args()
     return args
