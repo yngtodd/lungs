@@ -47,22 +47,28 @@ def train(epoch, train_loader, optimizer, criterion, model,dictionary, args):
     #print(f'Args.fp16 is {args.fp16}')
     for batch_idx, (data, target) in enumerate(train_loader):
         #print("data shape",data.size())
-        bs,n_crops,c, h, w = data.size()
+        #bs,n_crops,c, h, w = data.size()
+        print("data loaded successfully")
+        bs,c,h,w = data.size()
         data= data.view(-1,c,h,w)
+        print("data shape changed")
         #data = data.permute(1,0,2,3)
         if args.cuda:
+            print("data made contiguous and non blocking")
             data = data.contiguous()
             data = data.cuda(non_blocking=True)
 
             target = target.cuda(non_blocking=True)
         optimizer.zero_grad()
         output = model(data)
-        output = output.view(bs,n_crops, -1).mean(1)
+        print("optimizer grad =0 and model loaded")
+        #output = output.view(bs,n_crops, -1).mean(1)
         #print("output size", output.size(), "target size", target.size())
         #assert (output.data >= 0. & output.data <= 1.).all()
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
+        print("back prop done and weights are updated")
         train_loss.update(loss)
         #batch_time.update(time.time() - end)
         #loss_meter.update(loss.item(), data.size(0))
@@ -161,7 +167,7 @@ def main():
         model.cuda()
         print("model loaded in serial")
 	
-    print(model)
+    #print(model)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr*hvd.size())
 	#Horovod Optimizer
     optimizer = hvd.DistributedOptimizer(
@@ -198,8 +204,9 @@ def main():
             torch.save(model.state_dict(), args.checkpoint_format.format(epoch=epoch + 1))
 
     for epoch in range(1, args.num_epochs):
+        print("training : epoch number -> ",epoch)
         train(epoch, train_loader, optimizer, criterion, model,train_loss_dict, args)
-        validate(epoch, val_loader, criterion, model,val_loss_dict, args)
+        #validate(epoch, val_loader, criterion, model,val_loss_dict, args)
         if epoch % 5 ==0:
             save_checkpoint(epoch)
     if hvd.rank()==0:

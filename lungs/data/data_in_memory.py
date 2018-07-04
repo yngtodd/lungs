@@ -33,8 +33,8 @@ class ChestXrayDataSet(Dataset):
                 image_names.append(image_name)
                 labels.append(label)
 
-        self.image_names = image_names[:4096]
-        self.labels = labels[:4096]
+        self.image_names = image_names[:512]
+        self.labels = labels[:512]
         self.transform = transform
         for i in self.image_names:
             images.append(Image.open(i).convert('RGB'))

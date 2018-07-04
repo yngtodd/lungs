@@ -69,7 +69,7 @@ class XRayLoaders:
     ])
 
     def __init__(self, data_dir, batch_size,
-                 DataSet=ChestXrayDataSet, pin_memory=True,num_workers=1, hvd_size=None, rank = None,
+                 DataSet=ChestXrayDataSet, pin_memory=True,num_workers=0, hvd_size=None, rank = None,
                  train_transform=None, val_transform=None, test_transform=None):
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -125,7 +125,7 @@ class XRayLoaders:
                 data_dir=self.data_dir,
                 imagetxt=imagetxt,
                 transform=transforms.Compose([
-                    transforms.RandomResizedCrop(224),
+                    transforms.Resize(224),
                     transforms.RandomHorizontalFlip(),
                     transforms.ToTensor()]))#,
                     #normalize]))
