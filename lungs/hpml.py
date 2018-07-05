@@ -48,27 +48,22 @@ def train(epoch, train_loader, optimizer, criterion, model,dictionary, args):
     for batch_idx, (data, target) in enumerate(train_loader):
         #print("data shape",data.size())
         #bs,n_crops,c, h, w = data.size()
-        print("data loaded successfully")
         bs,c,h,w = data.size()
         data= data.view(-1,c,h,w)
-        print("data shape changed")
         #data = data.permute(1,0,2,3)
         if args.cuda:
-            print("data made contiguous and non blocking")
             data = data.contiguous()
             data = data.cuda(non_blocking=True)
 
             target = target.cuda(non_blocking=True)
         optimizer.zero_grad()
         output = model(data)
-        print("optimizer grad =0 and model loaded")
         #output = output.view(bs,n_crops, -1).mean(1)
         #print("output size", output.size(), "target size", target.size())
         #assert (output.data >= 0. & output.data <= 1.).all()
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
-        print("back prop done and weights are updated")
         train_loss.update(loss)
         #batch_time.update(time.time() - end)
         #loss_meter.update(loss.item(), data.size(0))
@@ -119,7 +114,8 @@ def main():
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
     hvd.init()
-    print("horovod initialized with world size",hvd.size())
+    if hvd.rank()==0:
+        print("horovod initialized with world size",hvd.size())
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.set_device(hvd.local_rank())
@@ -127,19 +123,18 @@ def main():
     
     if args.fp16:
         assert torch.backends.cudnn.enabled
-    print("data loading started")
-    	
+    data_time = time.time()	
     # Data loadingi
     if args.summitdev:
         loaders = XRayLoaders(data_dir=args.data_dev, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
         train_loader = loaders.train_loader(imagetxt=args.traintxt_dev)
-        val_loader = loaders.val_loader(imagetxt=args.valtxt_dev)
+        #val_loader = loaders.val_loader(imagetxt=args.valtxt_dev)
         print("data loaded for summitdev")
     else:
         loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
         train_loader = loaders.train_loader(imagetxt=args.traintxt)
-        val_loader = loaders.val_loader(imagetxt=args.valtxt)
-        print("data loaded for Summit")
+        #val_loader = loaders.val_loader(imagetxt=args.valtxt)
+        print("data loaded for Summit in time",time.time()-data_time)
 
 
     model = LungXnet()
@@ -162,7 +157,8 @@ def main():
     if args.cuda and args.parallel:
         model = nn.DataParallel(model)
         model = model.cuda()
-        print("model loaded in parallel")
+        if hvd.rank()==0:
+            print("model loaded in parallel")
     else:
         model.cuda()
         print("model loaded in serial")
@@ -197,24 +193,22 @@ def main():
     '''
     start = time.time()
     train_loss_dict = dict()
-    val_loss_dict = dict()
+    #val_loss_dict = dict()
 
     def save_checkpoint(epoch):
         if hvd.rank()==0:
             torch.save(model.state_dict(), args.checkpoint_format.format(epoch=epoch + 1))
 
     for epoch in range(1, args.num_epochs):
-        print("training : epoch number -> ",epoch)
         train(epoch, train_loader, optimizer, criterion, model,train_loss_dict, args)
         #validate(epoch, val_loader, criterion, model,val_loss_dict, args)
-        if epoch % 5 ==0:
-            save_checkpoint(epoch)
+        save_checkpoint(epoch)
     if hvd.rank()==0:
         print("\nJob's done! Total runtime:",time.time()-start)
     with open('train_loss.pickle', 'wb') as handle:
         pickle.dump(train_loss_dict, handle)
-    with open('val_loss.pickle', 'wb') as handle:
-        pickle.dump(val_loss_dict, handle)
+    #with open('val_loss.pickle', 'wb') as handle:
+    #    pickle.dump(val_loss_dict, handle)
     
 if __name__=="__main__":
     main()
