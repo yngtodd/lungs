@@ -3,8 +3,8 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 from parser import parse_args
 #from lungs.data.data import ChestXrayDataSet
-from data.data_in_memory import ChestXrayDataSet
-#from data.data import ChestXrayDataSet
+#from data.data_in_memory import ChestXrayDataSet
+from data.data import ChestXrayDataSet
 import torch.utils.data.distributed
 
 class XRayLoaders:
@@ -70,7 +70,7 @@ class XRayLoaders:
     ])
 
     def __init__(self, data_dir, batch_size,
-                 DataSet=ChestXrayDataSet, pin_memory=True,num_workers=0, hvd_size=None, rank = None,
+                 DataSet=ChestXrayDataSet, pin_memory=True,num_workers=4, hvd_size=None, rank = None,
                  train_transform=None, val_transform=None, test_transform=None):
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -83,7 +83,7 @@ class XRayLoaders:
         self.val_transform = val_transform
         self.test_transform = test_transform
 
-    def train_loader(self, imagetxt, shuffle=True, transform=True):
+    def train_loader(self, imagetxt, shuffle=True, transform=True,horovod=False):
         """
         Create trainloader with options for data transforms
 
@@ -128,6 +128,7 @@ class XRayLoaders:
                 transform=transforms.Compose([
                     transforms.Resize(224),
                     transforms.RandomHorizontalFlip(),
+                    transforms.Normalize([0.485, 0.456, 0.406],[0.229,0.224,0.225]),
                     transforms.ToTensor()]))#,
                     #normalize]))
                     #transforms.Resize(256),
@@ -137,17 +138,21 @@ class XRayLoaders:
                     #transforms.Lambda
                     #(lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops])),
                 #]))
-
-        train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
+        if horovod==True:
+            train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
-        loader = DataLoader(
-          dataset=dataset, batch_size=self.batch_size,
-          sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
-        )
-
+            loader = DataLoader(
+            dataset=dataset, batch_size=self.batch_size,
+            sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
+            )
+        else:
+            loader = DataLoader(
+                    dataset=dataset, batch_size = self.batch_size, shuffle=shuffle,
+                    num_workers=self.num_workers, pin_memory=self.pin_memory)
+            
         return loader
 
-    def val_loader(self, imagetxt, shuffle=True, transform=True):
+    def val_loader(self, imagetxt, shuffle=True, transform=True,horovod=False):
         """
         Create valloader with options for data transforms
 
@@ -190,22 +195,22 @@ class XRayLoaders:
                 data_dir=self.data_dir,
                 imagetxt=imagetxt,
                 transform=transforms.Compose([
-                    transforms.Resize(256),
-                    transforms.TenCrop(224),
-                    transforms.Lambda
-                    (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-                    transforms.Lambda
-                    (lambda crops: torch.stack([XRayLoaders.normalize(crop) for crop in crops])),
+                    transforms.Resize(224), transforms.Normalize([0.485, 0.456, 0.406],[0.229,0.224,0.225]),
+                    transforms.ToTensor()
                 ]))
 
-
-        train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
+        if horovod==True:
+            train_sampler = torch.utils.data.distributed.DistributedSampler(dataset,num_replicas=self.hvd_size,rank = self.rank)
         # Create data loader
-        loader = DataLoader(
-          dataset=dataset, batch_size=self.batch_size,
-          sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
-        )
-
+            loader = DataLoader(
+            dataset=dataset, batch_size=self.batch_size,
+            sampler=train_sampler,num_workers=self.num_workers, pin_memory=self.pin_memory
+            )
+        else:
+            loader = DataLoader(
+                    dataset=dataset, batch_size = self.batch_size, shuffle=shuffle,
+                    num_workers=self.num_workers, pin_memory=self.pin_memory)
+            
         return loader
 
     def test_loader(self, imagetxt, shuffle=True, transform=False):

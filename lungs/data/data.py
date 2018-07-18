@@ -33,8 +33,8 @@ class ChestXrayDataSet(Dataset):
                 image_names.append(image_name)
                 labels.append(label)
 
-        self.image_names = image_names[:4096]
-        self.labels = labels[:4096]
+        self.image_names = image_names
+        self.labels = labels
         self.transform = transform
 
     def __len__(self):
@@ -43,7 +43,7 @@ class ChestXrayDataSet(Dataset):
     def __getitem__(self, index):
         """Get next image and label"""
         img = self.image_names[index]
-        img = Image.open(img).convert('L')
+        img = Image.open(img).convert('RGB')
         label = self.labels[index]
 
         if self.transform is not None:

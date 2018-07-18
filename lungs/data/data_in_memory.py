@@ -37,7 +37,9 @@ class ChestXrayDataSet(Dataset):
         self.labels = labels
         self.transform = transform
         for i in self.image_names:
-            images.append(Image.open(i).convert('RGB'))
+            img = Image.open(i).convert('RGB')
+            img = img.resize((256,256),Image.BILINEAR)
+            images.append(img)
         self.images = images
 
     def __len__(self):

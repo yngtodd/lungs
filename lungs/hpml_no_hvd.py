@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
-import horovod.torch as hvd
 from parser import parse_args
 #from data.hpml_loaders import XRayLoaders
 from data.hpml_loaders import XRayLoaders
@@ -10,31 +9,6 @@ from models.lungXnet import LungXnet
 import torch.utils.data.distributed
 import time
 import pickle
-#from lungs.log import log_progress
-#from lungs.meters import AverageMeter, AUCMeter, mAPMeter
-
-#import logging
-#import logging.config
-
-
-#logging.config.fileConfig('logging.conf', defaults={'logfilename': './logs/main.log'})
-#logger = logging.getLogger(__name__)
-
-class Metric(object):
-        def __init__(self, name):
-            self.name = name
-            self.sum = torch.tensor(0.)
-            self.n = torch.tensor(0.)
-
-        def update(self,val):
-            self.sum += hvd.allreduce(val.cpu(), name=self.name)
-            self.n += 1
-
-        @property
-        def avg(self):
-            return self.sum / self.n
-
-
 
 def train(epoch, train_loader, optimizer, criterion, model,dictionary, args):
     """"""
@@ -44,7 +18,7 @@ def train(epoch, train_loader, optimizer, criterion, model,dictionary, args):
     num_samples = len(train_loader)
 
     model.train()
-    train_loss = Metric('train_loss')
+    #train_loss = Metric('train_loss')
     end = time.time()
     #print(f'Args.fp16 is {args.fp16}')
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -66,14 +40,14 @@ def train(epoch, train_loader, optimizer, criterion, model,dictionary, args):
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
-        train_loss.update(loss)
+        #train_loss.update(loss)
         #batch_time.update(time.time() - end)
         #loss_meter.update(loss.item(), data.size(0))
         #mapmeter.update(output, target)
         #end = time.time()
-    if hvd.rank()==0:
-        dictionary[epoch]=train_loss.avg.item()
-        print("time per epoch",time.time()-end)
+    #dictionary[epoch]=train_loss.avg.item()
+    dictionary[epoch]=loss
+    print("time per epoch",time.time()-end)
         #if batch_idx % args.log_interval == 0 and batch_idx > 0:
             #log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
     #print("time taken for training epoch",time.time()-end)   
@@ -86,10 +60,10 @@ def validate(epoch, val_loader, criterion, model,dictionary, args):
     num_samples = len(val_loader)
 
     model.eval()
-    val_loss = Metric('val_loss')
+    #val_loss = Metric('val_loss')
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
-        bs,n_crops, c, h, w = data.size()
+        bs, c, h, w = data.size()
         data = data.view(-1,c,h,w)
         #data = data.permute(1,0,2,3)
         if args.cuda:
@@ -98,15 +72,13 @@ def validate(epoch, val_loader, criterion, model,dictionary, args):
             target = target.cuda(non_blocking=True)
         output = model(data)
         #print(f'output has size {output.size()}')
-        output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
-        val_loss.update(loss)
+        #val_loss.update(loss)
         #batch_time.update(time.time() - end) 
         #loss_meter.update(loss.item(), data.size(0))
         #mapmeter.update(output, target)
         #end = time.time()
-    if hvd.rank()==0:
-        dictionary[epoch] = val_loss.avg.item()
+    dictionary[epoch] =loss
         #if batch_idx % args.log_interval == 0 and batch_idx > 0:
             #log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
     #print("time taken for validation epoch",time.time()-end)
@@ -115,12 +87,8 @@ def main():
     args = parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     torch.backends.cudnn.benchmark = True
-    hvd.init()
-    if hvd.rank()==0:
-        print("horovod initialized with world size",hvd.size())
     torch.manual_seed(args.seed)
     if args.cuda:
-        torch.cuda.set_device(hvd.local_rank())
         torch.cuda.manual_seed(args.seed)
     
     if args.fp16:
@@ -128,86 +96,56 @@ def main():
     data_time = time.time()	
     # Data loadingi
     if args.summitdev:
-        loaders = XRayLoaders(data_dir=args.data_dev, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
+        loaders = XRayLoaders(data_dir=args.data_dev, batch_size=args.batch_size)
         train_loader = loaders.train_loader(imagetxt=args.traintxt_dev)
         #val_loader = loaders.val_loader(imagetxt=args.valtxt_dev)
-        if hvd.rank()==0:
-            print("data loaded for summitdev in time ",time.time()-data_time)
     else:
-        loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size,hvd_size=hvd.size(),rank=hvd.rank())
+        loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
         train_loader = loaders.train_loader(imagetxt=args.traintxt)
         #val_loader = loaders.val_loader(imagetxt=args.valtxt)
         print("data loaded for Summit in time",time.time()-data_time)
 
 
     model = LungXnet()
-    '''
-	if args.fp16 and args.parallel:
-        model = nn.DataParallel(model)
-        model=model.cuda().half()
-        print("model loaded in half precision and running in parallel")
-    elif args.cuda and torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-        model.cuda()
-        print("model loaded in single precision and in data parallel mode")
-    elif args.fp16:
-        model=model.cuda().half()
-        print("model loaded in half precision")
-    else:
-        model.cuda()
-    '''
-	
+    resume_from_epoch = 0
+    for try_epoch in range(args.epochs, 0, -1):
+        if os.path.exists(args.checkpoint_format.format(epoch=try_epoch)):
+            resume_from_epoch = try_epoch
+            break	
     if args.cuda and args.parallel:
         model = nn.DataParallel(model)
         model = model.cuda()
-        if hvd.rank()==0:
-            print("model loaded in parallel")
+        print("model loaded in parallel"_
     else:
         model.cuda()
         print("model loaded in serial")
 	
     #print(model)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr*hvd.size())
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 	#Horovod Optimizer
-    optimizer = hvd.DistributedOptimizer(
-	    optimizer, named_parameters=model.named_parameters())
+    #optimizer = hvd.DistributedOptimizer(
+    #	    optimizer, named_parameters=model.named_parameters())
 	
     
     criterion = nn.BCEWithLogitsLoss()
-    if args.cuda:
-        criterion.cuda()
     criterion.cuda()
-    '''
-    train_meters = {
-      'train_loss': AverageMeter(name='trainloss'),
-      'train_time': AverageMeter(name='traintime'),
-      'train_mavep': mAPMeter() 
-    }
-
-    val_meters = {
-      'val_loss': AverageMeter(name='valloss'),
-      'val_time': AverageMeter(name='valtime'),
-      'val_mavep': mAPMeter()
-    }
-
-    logger.info(f'Starting off!')
-    epoch_time = AverageMeter(name='epoch_time')
-    end = time.time()
-    '''
+    if resume_from_epoch>0:
+        filepath = args.checkpoint_format.format(epoch=resume_from_epoch)
+        checkpoint = torch.load(filepath)
+        model.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])  
+    
     start = time.time()
-    train_loss_dict = dict()
     #val_loss_dict = dict()
 
     def save_checkpoint(epoch):
-        if hvd.rank()==0:
-            torch.save(model.state_dict(), args.checkpoint_format.format(epoch=epoch + 1))
+        torch.save(model.state_dict(), args.checkpoint_format.format(epoch=epoch + 1))
 
-    for epoch in range(1, args.num_epochs):
+    for epoch in range(resume_from_epoch, resume_from_epoch+args.num_epochs):
         train(epoch, train_loader, optimizer, criterion, model,train_loss_dict, args)
-        #validate(epoch, val_loader, criterion, model,val_loss_dict, args)
+        validate(epoch, val_loader, criterion, model,val_loss_dict, args)
         save_checkpoint(epoch)
-    if hvd.rank()==0:
-        print("\nJob's done! Total runtime:",time.time()-start)
+    print("\nJob's done! Total runtime:",time.time()-start)
     with open('train_loss.pickle', 'wb') as handle:
         pickle.dump(train_loss_dict, handle)
     #with open('val_loss.pickle', 'wb') as handle:
