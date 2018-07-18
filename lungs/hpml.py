@@ -122,7 +122,15 @@ def main():
     if args.cuda:
         torch.cuda.set_device(hvd.local_rank())
         torch.cuda.manual_seed(args.seed)
-    
+     
+    resume_from_epoch = 0
+    for try_epoch in range(args.epochs, 0, -1):
+        if os.path.exists(args.checkpoint_format.format(epoch=try_epoch)):
+            resume_from_epoch = try_epoch
+            break
+    resume_from_epoch = hvd.broadcast(torch.tensor(resume_from_epoch), root_rank=0,
+                                  name='resume_from_epoch').item()
+
     if args.fp16:
         assert torch.backends.cudnn.enabled
     data_time = time.time()	
@@ -141,21 +149,6 @@ def main():
 
 
     model = LungXnet()
-    '''
-	if args.fp16 and args.parallel:
-        model = nn.DataParallel(model)
-        model=model.cuda().half()
-        print("model loaded in half precision and running in parallel")
-    elif args.cuda and torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-        model.cuda()
-        print("model loaded in single precision and in data parallel mode")
-    elif args.fp16:
-        model=model.cuda().half()
-        print("model loaded in half precision")
-    else:
-        model.cuda()
-    '''
 	
     if args.cuda and args.parallel:
         model = nn.DataParallel(model)
@@ -172,28 +165,17 @@ def main():
     optimizer = hvd.DistributedOptimizer(
 	    optimizer, named_parameters=model.named_parameters())
 	
-    
+    if resume_from_epoch > 0 and hvd.rank() == 0:
+        filepath = args.checkpoint_format.format(epoch=resume_from_epoch)
+        checkpoint = torch.load(filepath)
+        model.load_state_dict(checkpoint['model'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+    hvd.broadcast_parameters(model.state_dict(), root_rank=0)
+    hvd.broadcast_optimizer_state(optimizer, root_rank=0) 
     criterion = nn.BCEWithLogitsLoss()
     if args.cuda:
         criterion.cuda()
     criterion.cuda()
-    '''
-    train_meters = {
-      'train_loss': AverageMeter(name='trainloss'),
-      'train_time': AverageMeter(name='traintime'),
-      'train_mavep': mAPMeter() 
-    }
-
-    val_meters = {
-      'val_loss': AverageMeter(name='valloss'),
-      'val_time': AverageMeter(name='valtime'),
-      'val_mavep': mAPMeter()
-    }
-
-    logger.info(f'Starting off!')
-    epoch_time = AverageMeter(name='epoch_time')
-    end = time.time()
-    '''
     start = time.time()
     train_loss_dict = dict()
     #val_loss_dict = dict()
@@ -204,14 +186,14 @@ def main():
 
     for epoch in range(1, args.num_epochs):
         train(epoch, train_loader, optimizer, criterion, model,train_loss_dict, args)
-        #validate(epoch, val_loader, criterion, model,val_loss_dict, args)
+        validate(epoch, val_loader, criterion, model,val_loss_dict, args)
         save_checkpoint(epoch)
     if hvd.rank()==0:
         print("\nJob's done! Total runtime:",time.time()-start)
     with open('train_loss.pickle', 'wb') as handle:
         pickle.dump(train_loss_dict, handle)
-    #with open('val_loss.pickle', 'wb') as handle:
-    #    pickle.dump(val_loss_dict, handle)
+    with open('val_loss.pickle', 'wb') as handle:
+        pickle.dump(val_loss_dict, handle)
     
 if __name__=="__main__":
     main()
