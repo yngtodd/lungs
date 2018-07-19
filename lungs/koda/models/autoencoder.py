@@ -10,6 +10,6 @@ class AutoEncoder(nn.Module):
         self.decoder = decoder
 
     def forward(self, x):
-        x = encoder(x)
-        x = decoder(x)
+        x = self.encoder(x)
+        x = self.decoder(x)
         return x
