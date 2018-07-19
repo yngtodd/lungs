@@ -5,7 +5,10 @@ from torch.autograd import Variable
 
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
-from lungs.models.lungXnet import LungXnet
+
+from lungs.koda import AutoEncoder
+from lungs.koda import DenseNet121
+from lungs.koda import LinearDecoder
 
 import time
 from lungs.utils.log import log_progress, record
@@ -45,41 +48,6 @@ def train(train_loader, optimizer, criterion, model, meters, args, epoch):
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
-    return loss_meter.avg, mapmeter.val
-
-
-@record
-def validate(val_loader, criterion, model, meters, args, epoch):
-    """"""
-    loss_meter = meters['val_loss']
-    batch_time = meters['val_time']
-    mapmeter = meters['val_mavep']
-    num_samples = len(val_loader)
-
-    model.eval()
-    end = time.time()
-    for batch_idx, (data, target) in enumerate(val_loader):
-        bs, n_crops, c, h, w = data.size()
-        data = data.view(-1, c, h, w)
-
-        if args.cuda:
-            data = data.cuda(non_blocking=True).half()
-            target = target.cuda(non_blocking=True).half()
-
-        output = model(data)
-        output = output.view(bs, n_crops, -1).mean(1)
-        loss = criterion(output, target)
-
-        batch_time.update(time.time() - end)
-        loss_meter.update(loss.item(), data.size(0))
-        mapmeter.update(output, target)
-        end = time.time()
-
-        if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
-
-    return loss_meter.avg, mapmeter.val
-
 
 def main():
     torch.backends.cudnn.benchmark = True
@@ -96,17 +64,16 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
 
-    model = LungXnet()
-    if args.parallel:
-        model = nn.DataParallel(model)
-        model = model.cuda().half()
+    encoder = DenseNet121()
+    decoder = LinearDecoder(200, 300)
+    model = AutoEncoder(encoder, decoder)
 
     if args.cuda and not args.parallel:
-        model.cuda().half()
+        model.cuda()
 
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
-    criterion = nn.BCEWithLogitsLoss(size_average=True)
+    criterion = nn.MSELoss()
     if args.cuda:
         criterion.cuda()
 
@@ -116,18 +83,11 @@ def main():
       'train_mavep': mAPMeter()
     }
 
-    val_meters = {
-      'val_loss': AverageMeter(name='valloss'),
-      'val_time': AverageMeter(name='valtime'),
-      'val_mavep': mAPMeter()
-    }
-
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
     print(f'Number of epochs: {args.num_epochs}')
     for epoch in range(1, args.num_epochs+1):
-        train_loss, train_map = train(train_loader, optimizer, criterion, model, train_meters, args, epoch=epoch)
-        val_loss, val_map = validate(val_loader, criterion, model, val_meters, args, epoch=epoch)
+        train(train_loader, optimizer, criterion, model, train_meters, args, epoch=epoch)
         epoch_time.update(time.time() - end)
         end = time.time()
 
