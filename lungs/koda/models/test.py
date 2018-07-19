@@ -10,6 +10,7 @@ decoder2 = Decoder60(200, 300)
 
 x = torch.randn(4, 3, 224, 224) 
 latent = encoder(x)
+print(f'Latent space is of size {latent.size()}')
 
 out1 = decoder1(latent)
 #out2 = decoder2(latent) 
