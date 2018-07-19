@@ -42,7 +42,7 @@ class hj_fp16(nn.Module):
         self.fc1 = nn.Sequential(nn.Linear(65536,128),nn.ReLU(),nn.Dropout2d(0.5))
         self.fc2 = nn.Sequential(nn.Linear(128,14))
     
-	def forward(self, x):
+    def forward(self, x):
         x = self.conv1_block(x)
         x = self.conv2_block(x)
         x  = self.conv3_block(x)
