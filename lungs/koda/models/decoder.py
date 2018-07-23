@@ -31,7 +31,7 @@ class Decoder60(nn.Module):
 
 class LinearDecoder(nn.Module):
 
-    def __init__(self, latent_size, intermediate_size, outsize=50176):
+    def __init__(self, latent_size, intermediate_size, outsize=200704): #200704
         super(LinearDecoder, self).__init__()
         self.fc1 = nn.Linear(latent_size, intermediate_size)
         self.fc2 = nn.Linear(intermediate_size, outsize)
@@ -42,5 +42,5 @@ class LinearDecoder(nn.Module):
     def forward(self, z):
         h3 = self.relu(self.fc1(z))
         out = self.relu(self.fc2(h3))
-        out = out.view(z.size(0), 1, 224, 224)
+        out = out.view(z.size(0), 3, 224, 224)
         return out
