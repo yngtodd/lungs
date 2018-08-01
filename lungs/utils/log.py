@@ -2,7 +2,7 @@ import time
 import logging
 
 
-def log_progress(context, epoch, num_epochs, batch, num_samples, timemeter, lossmeter, apmeter, aucmeter=None):
+def log_progress(context, epoch, num_epochs, batch, num_samples, timemeter, lossmeter, apmeter=None, aucmeter=None):
     """
     Prints current values and averages for AverageMeters
 
@@ -31,7 +31,10 @@ def log_progress(context, epoch, num_epochs, batch, num_samples, timemeter, loss
               f"Batch: [{batch}/{num_samples}] "\
               f"Time: {timemeter.val:.2f} [{timemeter.avg:.2f}] "\
               f"Loss: {lossmeter.val:.4f} [{lossmeter.avg:.4f}] "\
-              f"Avg Prec: {apmeter.val:.4f} "
+
+    if apmeter:
+        precision = f"Avg Prec: {apmeter.val:.4f} "
+        message += precision
 
     if aucmeter:
         auc = f"AUC: {aucmeter.area:.2f} TPR: {aucmeter.tpr:.2f} FPR: {aucmeter.fpr:.2f} "
@@ -49,17 +52,17 @@ class record:
 
     def __call__(self, *args, **kwargs):
         logging.basicConfig(filename=f'{self.function.__name__}.log', level=logging.INFO)
-        
+
         epoch = kwargs['epoch']
 
         t1 = time.time()
-        loss, ave_prec = self.function(*args, *kwargs)
+        loss = self.function(*args, *kwargs)
         t2 = time.time() - t1
 
         logging.info(
           f'{self.function.__name__} '\
           f'epoch: {epoch} runtime: {t2:.4f} seconds '\
-          f'loss: {loss} average precision: {ave_prec}'
+          f'loss: {loss}'
         )
 
-        return loss, ave_prec
+        return loss

@@ -15,38 +15,49 @@ from lungs.utils.log import log_progress, record
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
 
-@record
-def train(train_loader, optimizer, criterion, model, meters, args, epoch):
+def save_checkpoint(state):
+    filename='checkpoint' + str(state['epoch']) + '.pth.tar'
+    torch.save(state, filename)
+
+
+#@record
+def train(train_loader, optimizer, criterion, model, meters, epoch, args):
     """"""
-    loss_meter = meters['train_loss']
+    loss_meter = meters['loss']
     batch_time = meters['train_time']
-    mapmeter = meters['train_mavep']
     num_samples = len(train_loader)
 
     model.train()
+    print(f'epoch: {epoch}')
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
 
         if args.cuda:
-            data = data.cuda(non_blocking=True).half()
-            target = target.cuda(non_blocking=True).half()
+            data = data.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         optimizer.zero_grad()
         output = model(data)
-        output = output.view(bs, n_crops, -1).mean(1)
-        loss = criterion(output, target)
+#        output = output.view(bs, n_crops, -1).mean(1)
+        loss = criterion(output, data)
         loss.backward()
         optimizer.step()
 
         batch_time.update(time.time() - end)
         loss_meter.update(loss.item(), data.size(0))
-        mapmeter.update(output, target)
         end = time.time()
 
+        if batch_idx % 10 == 0 and batch_idx > 14:
+            save_checkpoint({
+              'epoch': epoch,
+              'state_dict': model.encoder.state_dict(),
+              'optimizer' : optimizer.state_dict(),
+            })
+
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+            log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter)
 
 
 def main():
@@ -77,21 +88,21 @@ def main():
     if args.cuda:
         criterion.cuda()
 
-    train_meters = {
-      'train_loss': AverageMeter(name='trainloss'),
+    meters = {
+      'loss': AverageMeter(name='trainloss'),
       'train_time': AverageMeter(name='traintime'),
-      'train_mavep': mAPMeter()
     }
 
     epoch_time = AverageMeter(name='epoch_time')
     end = time.time()
     print(f'Number of epochs: {args.num_epochs}')
     for epoch in range(1, args.num_epochs+1):
-        train(train_loader, optimizer, criterion, model, train_meters, args, epoch=epoch)
+        train(train_loader, optimizer, criterion, model, meters, epoch, args)
         epoch_time.update(time.time() - end)
         end = time.time()
 
     print(f"\nJob's done! Total runtime: {epoch_time.sum}, Average runtime: {epoch_time.avg}")
+    meters['loss'].save('/home/ygx/lungs/lungs/koda')
 
 
 if __name__=="__main__":

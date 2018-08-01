@@ -5,31 +5,32 @@ from torch.autograd import Variable
 
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
-from lungs.models.lungXnet import LungXnet
+from lungs.koda import DenseNet121
+from lungs.models.transfer import TransferNet
 
+import os
 import time
 from lungs.utils.log import log_progress, record
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
 
-@record
+#@record
 def train(train_loader, optimizer, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['train_loss']
     batch_time = meters['train_time']
     mapmeter = meters['train_mavep']
     num_samples = len(train_loader)
-    print(f'epoch is: {type(epoch)}')
+
     model.train()
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
-        print(f'data size {data.size()}')
 
         if args.cuda:
-            data = data.cuda(non_blocking=True).half()
-            target = target.cuda(non_blocking=True).half()
+            data = data.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         optimizer.zero_grad()
         output = model(data)
@@ -49,7 +50,7 @@ def train(train_loader, optimizer, criterion, model, meters, args, epoch):
     return loss_meter.avg, mapmeter.val
 
 
-@record
+#@record
 def validate(val_loader, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['val_loss']
@@ -64,8 +65,8 @@ def validate(val_loader, criterion, model, meters, args, epoch):
         data = data.view(-1, c, h, w)
 
         if args.cuda:
-            data = data.cuda(non_blocking=True).half()
-            target = target.cuda(non_blocking=True).half()
+            data = data.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         output = model(data)
         output = output.view(bs, n_crops, -1).mean(1)
@@ -97,13 +98,24 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
 
-    model = LungXnet()
+    encoder = DenseNet121()
+
+    if args.resume:
+        if os.path.isfile(args.savefile):
+            print("=> loading checkpoint '{}'".format(args.savefile))
+            checkpoint = torch.load(args.savefile)
+            encoder.load_state_dict(checkpoint['state_dict'])
+            print("=> loaded checkpoint '{}'".format(args.savefile))
+        else:
+            print("=> no checkpoint found at '{}'".format(args.savefile))
+
+    model = TransferNet(encoder)
     if args.parallel:
 #        model = nn.DataParallel(model)
-        model = model.cuda().half()
+        model = model.cuda()
 
     if args.cuda and not args.parallel:
-        model.cuda().half()
+        model.cuda()
 
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
@@ -134,6 +146,8 @@ def main():
         end = time.time()
 
     print(f"\nJob's done! Total runtime: {epoch_time.sum}, Average runtime: {epoch_time.avg}")
+    train_meters['train_loss'].save('/home/ygx/lungs/lungs')
+    val_meters['val_loss'].save('/home/ygx/lungs/lungs')
 
 
 if __name__=="__main__":
