@@ -21,8 +21,30 @@ def save_checkpoint(state):
     torch.save(state, path)
 
 
+def get_save_state(checkpoint):
+    """
+    Removes extraneous naming from previous model.
+    """
+    save_state = dict(checkpoint['state_dict'])
+    old_keys = list(save_state.keys())
+    new_keys = [x.replace('module.', '') for x in save_state.keys()]
+    for i in range(len(new_keys)):
+        save_state[new_keys[i]] = save_state[old_keys[i]]
+    return save_state
+
+
+def load_save_state(model, save_state):
+    """
+    Keep save states that match those in the final model.
+    """
+    model_state = model.state_dict()
+    save_state = {k: v for k, v in save_state.items() if k in model_state}
+    model.state_dict().update(save_state)
+    model.load_state_dict(save_state)
+
+
 #@record
-def validate(val_loader, criterion, model, meters, args, epoch):
+def validate(val_loader, criterion, model, meters, args, epoch=1):
     """"""
     loss_meter = meters['val_loss']
     batch_time = meters['val_time']
@@ -85,7 +107,9 @@ def main():
         if os.path.isfile(args.savefile):
             print("=> loading checkpoint '{}'".format(args.savefile))
             checkpoint = torch.load(args.savefile)
-            model.load_state_dict(checkpoint['state_dict'])
+            # must make sure the save states align.
+            save_state = get_save_state(checkpoint)
+            load_save_state(model, save_state)
             print("=> loaded checkpoint '{}'".format(args.savefile))
         else:
             print("=> no checkpoint found at '{}'".format(args.savefile))
@@ -110,18 +134,7 @@ def main():
       'val_accuracy': AverageMeter(name='valaccuracy')
     }
 
-    epoch_time = AverageMeter(name='epoch_time')
-    end = time.time()
-    print(f'Number of epochs: {args.num_epochs}')
-    for epoch in range(1, args.num_epochs+1):
-        print(f'epoch: {epoch}')
-        val_loss, val_map = validate(val_loader, criterion, model, val_meters, args, epoch=epoch)
-        epoch_time.update(time.time() - end)
-        end = time.time()
-
-    print(f"\nJob's done! Total runtime: {epoch_time.sum}, Average runtime: {epoch_time.avg}")
-    val_meters['val_loss'].save('/home/ygx/lungs/lungs')
-    val_meters['val_accuracy'].save('/home/ygx/lungs/lungs/acculogs')
+    val_loss, val_map = validate(val_loader, criterion, model, val_meters, args)
 
 
 if __name__=="__main__":
