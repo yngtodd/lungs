@@ -24,6 +24,7 @@ def train(train_loader, optimizer, criterion, model, meters, args, epoch):
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
+        print(f'data shape: {data.size()}')
         data = data.view(-1, c, h, w)
         print(f'data size {data.size()}')
 
@@ -33,7 +34,10 @@ def train(train_loader, optimizer, criterion, model, meters, args, epoch):
 
         optimizer.zero_grad()
         output = model(data)
+        print(f'output shape: {output.size()}')
         output = output.view(bs, n_crops, -1).mean(1)
+        print(f'output shape: {output.size()}')
+        print(f'target shape: {target.size()}')
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()

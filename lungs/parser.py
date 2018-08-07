@@ -63,7 +63,7 @@ def parse_args():
                         help='Whether to use data parallelism')
     parser.add_argument('--resume', type=bool, default=True,
                         help='Resumes training from savefile.')
-    parser.add_argument('--savefile', type=str, default='/home/ygx/lungs/lungs/koda/savepoints/checkpoint16.pth.tar',
+    parser.add_argument('--savefile', type=str, default='/home/ygx/lungs/lungs/koda/savepoints/checkpoint75.pth.tar',
                         help='Path to saved model weights.')
     args = parser.parse_args()
     return args

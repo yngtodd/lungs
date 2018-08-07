@@ -49,7 +49,7 @@ def train(train_loader, optimizer, criterion, model, meters, epoch, args):
         loss_meter.update(loss.item(), data.size(0))
         end = time.time()
 
-        if batch_idx % 10 == 0 and batch_idx > 14:
+        if batch_idx % 10 == 0:
             save_checkpoint({
               'epoch': epoch,
               'state_dict': model.encoder.state_dict(),

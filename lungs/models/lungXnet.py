@@ -34,13 +34,14 @@ class LungXnet(nn.Module):
                               num_init_features=num_init_features, bn_size=bn_size,
                               drop_rate=drop_rate, num_classes=num_classes)
 
-        n_filters = self.model.classifier.in_features
+        self.n_filters = self.model.classifier.in_features
 
         self.model.classifier = nn.Sequential(
-            OrderedDict([('linear', nn.Linear(n_filters, num_classes)),
+            OrderedDict([('linear', nn.Linear(self.n_filters, num_classes)),
                          ('sigmoid', nn.Sigmoid())])
         )
 
     def forward(self, x):
+        print(f'n_filters = {self.n_filters}')
         x = self.model(x)
         return x

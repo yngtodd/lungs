@@ -17,7 +17,7 @@ class AverageMeter(object):
     rank : int
         Rank of the values computed (if distributed).
     """
-    def __init__(self, name, rank=None):
+    def __init__(self, name, rank=0):
         self.name = name
         self.rank = rank
         self.reset()

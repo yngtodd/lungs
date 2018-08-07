@@ -22,42 +22,6 @@ def save_checkpoint(state):
 
 
 #@record
-def train(train_loader, optimizer, criterion, model, meters, args, epoch):
-    """"""
-    loss_meter = meters['train_loss']
-    batch_time = meters['train_time']
-    mapmeter = meters['train_mavep']
-    num_samples = len(train_loader)
-
-    model.train()
-    end = time.time()
-    for batch_idx, (data, target) in enumerate(train_loader):
-        bs, n_crops, c, h, w = data.size()
-        data = data.view(-1, c, h, w)
-
-        if args.cuda:
-            data = data.cuda(non_blocking=True)
-            target = target.cuda(non_blocking=True)
-
-        optimizer.zero_grad()
-        output = model(data)
-        output = output.view(bs, n_crops, -1).mean(1)
-        loss = criterion(output, target)
-        loss.backward()
-        optimizer.step()
-
-        batch_time.update(time.time() - end)
-        loss_meter.update(loss.item(), data.size(0))
-        mapmeter.update(output, target)
-        end = time.time()
-
-        if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            log_progress('Train', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
-
-    return loss_meter.avg, mapmeter.val
-
-
-#@record
 def validate(val_loader, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['val_loss']
@@ -112,21 +76,20 @@ def main():
 
     # Data loading
     loaders = XRayLoaders(data_dir=args.data, batch_size=args.batch_size)
-    train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
 
     encoder = DenseNet121()
+    model = TransferNet(encoder)
 
     if args.resume:
         if os.path.isfile(args.savefile):
             print("=> loading checkpoint '{}'".format(args.savefile))
             checkpoint = torch.load(args.savefile)
-            encoder.load_state_dict(checkpoint['state_dict'])
+            model.load_state_dict(checkpoint['state_dict'])
             print("=> loaded checkpoint '{}'".format(args.savefile))
         else:
             print("=> no checkpoint found at '{}'".format(args.savefile))
 
-    model = TransferNet(encoder)
     if args.parallel:
         model = nn.DataParallel(model)
         model = model.cuda()
@@ -140,12 +103,6 @@ def main():
     if args.cuda:
         criterion.cuda()
 
-    train_meters = {
-      'train_loss': AverageMeter(name='trainloss'),
-      'train_time': AverageMeter(name='traintime'),
-      'train_mavep': mAPMeter()
-    }
-
     val_meters = {
       'val_loss': AverageMeter(name='valloss'),
       'val_time': AverageMeter(name='valtime'),
@@ -158,21 +115,11 @@ def main():
     print(f'Number of epochs: {args.num_epochs}')
     for epoch in range(1, args.num_epochs+1):
         print(f'epoch: {epoch}')
-        train_loss, train_map = train(train_loader, optimizer, criterion, model, train_meters, args, epoch=epoch)
-
-        if epoch % 10 == 0:
-            save_checkpoint({
-              'epoch': epoch,
-              'state_dict': model.state_dict(),
-              'optimizer' : optimizer.state_dict(),
-            })
-
         val_loss, val_map = validate(val_loader, criterion, model, val_meters, args, epoch=epoch)
         epoch_time.update(time.time() - end)
         end = time.time()
 
     print(f"\nJob's done! Total runtime: {epoch_time.sum}, Average runtime: {epoch_time.avg}")
-    train_meters['train_loss'].save('/home/ygx/lungs/lungs')
     val_meters['val_loss'].save('/home/ygx/lungs/lungs')
     val_meters['val_accuracy'].save('/home/ygx/lungs/lungs/acculogs')
 
