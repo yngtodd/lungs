@@ -12,6 +12,7 @@ import os
 import time
 from lungs.utils.log import log_progress, record
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
+from lungs.meters import compute_auc, Metric
 
 
 def save_checkpoint(state):
@@ -51,6 +52,7 @@ def validate(val_loader, criterion, model, meters, args, epoch=1):
     mapmeter = meters['val_mavep']
     accumeter = meters['val_accuracy']
     num_samples = len(val_loader)
+    aucs = Metric(name='val_auc')
 
     model.eval()
     correct = 0
@@ -77,7 +79,12 @@ def validate(val_loader, criterion, model, meters, args, epoch=1):
         end = time.time()
 
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
-            log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+            auc = compute_auc(target, output).mean()
+            aucs.update(auc)
+            print(f'AUC: {aucs.val:.3f}, average AUC: {aucs.avg:.3f}') 
+
+            #log_progress('Validation', epoch, args.num_epochs, 
+            #             batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
 #    accuracy = 100. * correct / num_samples
 #    accumeter.update(accuracy)

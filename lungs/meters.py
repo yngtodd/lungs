@@ -156,3 +156,65 @@ class mAPMeter(meter.Meter):
         target = target.detach()
         self.apmeter.add(output, target, weight)
         self.val = self.apmeter.value().mean()
+
+
+def compute_auc(y_true, y_pred):
+    """Computes Area Under the Curve (AUC) from output scores.
+
+    :param output: Pytorch tensor on GPU, shape = [n_samples, n_classes]
+          can either be probability estimates of the positive class,
+          confidence values, or binary decisions.
+    :param target: Pytorch tensor on GPU, shape = [n_samples, n_classes]
+          true binary labels.
+    :return: list of AUROCs for each class.
+    """
+    # return np.random.rand(14,output.size(1))
+    # global args
+    aucs = []
+    # print('target',target.type())
+    # print('output:',output.type())
+    if isinstance(y_true,torch.Tensor):
+        y_true_np = y_true.cpu().data.numpy()
+        y_pred_np = y_pred.cpu().data.numpy()
+    else:
+        y_true_np = y_true
+        y_pred_np = y_pred
+
+    for i in range(y_true_np.shape[1]):
+        try:
+            aucs.append(roc_auc_score(y_true_np[:, i], y_pred_np[:, i]))
+        except ValueError:
+            # print('info: insufficient samples to compute AUC... ')
+            aucs.append(0)
+
+    return np.array(aucs)
+
+
+class Metric(object):
+    """Computes and stores the average and current value"""
+    def __init__(self, name,keep=False):
+        self.name=name
+        self.keep=keep
+        self.sum = 0
+        self.n = 0
+        self.val = 0
+        self.store=[]
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += self.val * n
+        self.n += n
+        if self.keep:
+            self.store.append(self.val)
+
+    @property
+    def avg(self):
+        return self.sum / self.n
+
+    @property
+    def cum(self):
+        return self.sum
+
+    @property
+    def data(self):
+        return np.array(self.store)
