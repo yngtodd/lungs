@@ -3,8 +3,8 @@ import torch.nn as nn
 
 class HyperParameters:
 
-    def __init__(self, nfilters1, nfilters2, nfilters3,
-                 kernel1=3, kernel2=3, kernel3=3):
+    def __init__(self, nfilters1=100, nfilters2=100, 
+                 nfilters3=100, kernel1=3, kernel2=3, kernel3=3):
         self.nfilters1 = nfilters1
         self.nfilters2 = nfilters2
         self.nfilters3 = nfilters3
