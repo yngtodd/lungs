@@ -81,9 +81,9 @@ def validate(val_loader, criterion, model, meters, args, epoch=1):
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             auc = compute_auc(target, output).mean()
             aucs.update(auc)
-            print(f'AUC: {aucs.val:.3f}, average AUC: {aucs.avg:.3f}') 
+            print(f'AUC: {aucs.val:.3f}, average AUC: {aucs.avg:.3f}')
 
-            #log_progress('Validation', epoch, args.num_epochs, 
+            #log_progress('Validation', epoch, args.num_epochs,
             #             batch_idx, num_samples, batch_time, loss_meter, mapmeter)
 
 #    accuracy = 100. * correct / num_samples

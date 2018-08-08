@@ -3,6 +3,7 @@ import numpy as np
 
 from torchnet.meter import meter
 from torchnet.meter import APMeter
+from sklearn.metrics import roc_auc_score
 
 
 class AverageMeter(object):
