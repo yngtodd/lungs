@@ -1,0 +1,3 @@
+INFO:root:train epoch: 1 runtime: 283.2442 seconds loss: None
+INFO:root:train epoch: 2 runtime: 280.8241 seconds loss: None
+INFO:root:train epoch: 3 runtime: 277.9379 seconds loss: None

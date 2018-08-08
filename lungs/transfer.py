@@ -5,39 +5,43 @@ from torch.autograd import Variable
 
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
-from lungs.models.lungXnet import LungXnet
+from lungs.koda import DenseNet121
+from lungs.models.transfer import TransferNet
 
+import os
 import time
 from lungs.utils.log import log_progress, record
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
 
 
-@record
+def save_checkpoint(state):
+    savedir = '/home/ygx/lungs/lungs/transfersaves'
+    filename= 'checkpoint' + str(state['epoch']) + '.pth.tar'
+    path = os.path.join(savedir, filename)
+    torch.save(state, path)
+
+
+#@record
 def train(train_loader, optimizer, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['train_loss']
     batch_time = meters['train_time']
     mapmeter = meters['train_mavep']
     num_samples = len(train_loader)
-    print(f'epoch is: {type(epoch)}')
+
     model.train()
     end = time.time()
     for batch_idx, (data, target) in enumerate(train_loader):
         bs, n_crops, c, h, w = data.size()
-        print(f'data shape: {data.size()}')
         data = data.view(-1, c, h, w)
-        print(f'data size {data.size()}')
 
         if args.cuda:
-            data = data.cuda(non_blocking=True).half()
-            target = target.cuda(non_blocking=True).half()
+            data = data.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         optimizer.zero_grad()
         output = model(data)
-        print(f'output shape: {output.size()}')
         output = output.view(bs, n_crops, -1).mean(1)
-        print(f'output shape: {output.size()}')
-        print(f'target shape: {target.size()}')
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
@@ -53,27 +57,33 @@ def train(train_loader, optimizer, criterion, model, meters, args, epoch):
     return loss_meter.avg, mapmeter.val
 
 
-@record
+#@record
 def validate(val_loader, criterion, model, meters, args, epoch):
     """"""
     loss_meter = meters['val_loss']
     batch_time = meters['val_time']
     mapmeter = meters['val_mavep']
+    accumeter = meters['val_accuracy']
     num_samples = len(val_loader)
 
     model.eval()
+    correct = 0
     end = time.time()
     for batch_idx, (data, target) in enumerate(val_loader):
         bs, n_crops, c, h, w = data.size()
         data = data.view(-1, c, h, w)
 
         if args.cuda:
-            data = data.cuda(non_blocking=True).half()
-            target = target.cuda(non_blocking=True).half()
+            data = data.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
 
         output = model(data)
         output = output.view(bs, n_crops, -1).mean(1)
         loss = criterion(output, target)
+        # get the index of the max log-probability
+#        pred = output.max(1, keepdim=True)[1]
+#        correct += pred.eq(target.view_as(pred)).sum().item()
+#        correct += (pred == target).sum()
 
         batch_time.update(time.time() - end)
         loss_meter.update(loss.item(), data.size(0))
@@ -82,6 +92,10 @@ def validate(val_loader, criterion, model, meters, args, epoch):
 
         if batch_idx % args.log_interval == 0 and batch_idx > 0:
             log_progress('Validation', epoch, args.num_epochs, batch_idx, num_samples, batch_time, loss_meter, mapmeter)
+
+#    accuracy = 100. * correct / num_samples
+#    accumeter.update(accuracy)
+#    print(f'Valdiation Accuracy: {accuracy}')
 
     return loss_meter.avg, mapmeter.val
 
@@ -101,13 +115,24 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
 
-    model = LungXnet()
+    encoder = DenseNet121()
+
+    if args.resume:
+        if os.path.isfile(args.savefile):
+            print("=> loading checkpoint '{}'".format(args.savefile))
+            checkpoint = torch.load(args.savefile)
+            encoder.load_state_dict(checkpoint['state_dict'])
+            print("=> loaded checkpoint '{}'".format(args.savefile))
+        else:
+            print("=> no checkpoint found at '{}'".format(args.savefile))
+
+    model = TransferNet(encoder)
     if args.parallel:
-#        model = nn.DataParallel(model)
-        model = model.cuda().half()
+        model = nn.DataParallel(model)
+        model = model.cuda()
 
     if args.cuda and not args.parallel:
-        model.cuda().half()
+        model.cuda()
 
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
@@ -124,7 +149,8 @@ def main():
     val_meters = {
       'val_loss': AverageMeter(name='valloss'),
       'val_time': AverageMeter(name='valtime'),
-      'val_mavep': mAPMeter()
+      'val_mavep': mAPMeter(),
+      'val_accuracy': AverageMeter(name='valaccuracy')
     }
 
     epoch_time = AverageMeter(name='epoch_time')
@@ -133,11 +159,22 @@ def main():
     for epoch in range(1, args.num_epochs+1):
         print(f'epoch: {epoch}')
         train_loss, train_map = train(train_loader, optimizer, criterion, model, train_meters, args, epoch=epoch)
+
+        if epoch % 10 == 0:
+            save_checkpoint({
+              'epoch': epoch,
+              'state_dict': model.state_dict(),
+              'optimizer' : optimizer.state_dict(),
+            })
+
         val_loss, val_map = validate(val_loader, criterion, model, val_meters, args, epoch=epoch)
         epoch_time.update(time.time() - end)
         end = time.time()
 
     print(f"\nJob's done! Total runtime: {epoch_time.sum}, Average runtime: {epoch_time.avg}")
+    train_meters['train_loss'].save('/home/ygx/lungs/lungs')
+    val_meters['val_loss'].save('/home/ygx/lungs/lungs')
+    val_meters['val_accuracy'].save('/home/ygx/lungs/lungs/acculogs')
 
 
 if __name__=="__main__":
