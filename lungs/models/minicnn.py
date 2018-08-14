@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class HyperParameters:
 
-    def __init__(self, nfilters1=100, nfilters2=100, 
+    def __init__(self, nfilters1=100, nfilters2=100,
                  nfilters3=100, kernel1=3, kernel2=3, kernel3=3):
         self.nfilters1 = nfilters1
         self.nfilters2 = nfilters2
@@ -34,6 +34,13 @@ class MiniFeatures(nn.Module):
             nn.BatchNorm2d(hparams.nfilters2),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
+
+        self.features = nn.Sequential(
+            nn.Conv2d(3, hparams.nfilters1, hparams.kernel1),
+            nn.ReLU(),
+            nn.Conv2d(50, hparams.nfilters2, hparams.kernel2),
+            nn.ReLU(),
+            nn.Conv2d(100, hparams.nfilters3, hparams.kernel3),
             nn.ReLU()
         )
 
@@ -64,6 +71,9 @@ class MiniCNN(nn.Module):
     def forward(self, x):
         x = self.features(x)
         x = x.reshape(x.size(0), -1)
+        print(f'features output: {x.size()}')
         x = self.fc1(x)
+        print(f'fc1 output: {x.size()}')
         x = self.fc2(x)
         return x
+        print(f'fc2 output: {x.size()}')
