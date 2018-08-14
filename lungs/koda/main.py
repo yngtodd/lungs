@@ -77,6 +77,16 @@ def main():
 
     encoder = Encoder() 
     decoder = Decoder()
+
+    if args.resume:
+        if os.path.isfile(args.savefile):
+            print("=> loading checkpoint '{}'".format(args.savefile))
+            checkpoint = torch.load(args.savefile)
+            encoder.load_state_dict(checkpoint['state_dict'])
+            print("=> loaded checkpoint '{}'".format(args.savefile))
+        else:
+            print("=> no checkpoint found at '{}'".format(args.savefile))
+
     model = AutoEncoder(encoder, decoder)
 
     if args.cuda and not args.parallel:
