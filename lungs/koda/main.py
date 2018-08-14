@@ -6,9 +6,9 @@ from torch.autograd import Variable
 from lungs.parser import parse_args
 from lungs.data.loaders import XRayLoaders
 
-from lungs.koda import AutoEncoder
-from lungs.koda import DenseNet121
-from lungs.koda import LinearDecoder
+from lungs.models.miniencoder import Encoder
+from lungs.models.miniencoder import Decoder
+from lungs.models.miniencoder import AutoEncoder
 
 import time
 from lungs.utils.log import log_progress, record
@@ -75,8 +75,8 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
 
-    encoder = DenseNet121()
-    decoder = LinearDecoder(200, 300)
+    encoder = Encoder() 
+    decoder = Decoder()
     model = AutoEncoder(encoder, decoder)
 
     if args.cuda and not args.parallel:
