@@ -10,6 +10,7 @@ from lungs.models.miniencoder import Encoder
 from lungs.models.miniencoder import Decoder
 from lungs.models.miniencoder import AutoEncoder
 
+import os
 import time
 from lungs.utils.log import log_progress, record
 from lungs.meters import AverageMeter, AUCMeter, mAPMeter
@@ -75,7 +76,7 @@ def main():
     train_loader = loaders.train_loader(imagetxt=args.traintxt)
     val_loader = loaders.val_loader(imagetxt=args.valtxt)
 
-    encoder = Encoder() 
+    encoder = Encoder()
     decoder = Decoder()
 
     if args.resume:
